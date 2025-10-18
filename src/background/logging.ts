@@ -3,7 +3,7 @@
  * Handles log entry creation and storage
  */
 
-import type { LogEntry, Settings } from '@/types';
+import type { LogEntry, Settings, PageMetadata } from '@/types';
 import { getLogData, setLogData } from './storage';
 
 /**
@@ -45,7 +45,8 @@ export function isDuplicate(dedupeKey: string, entries: LogEntry[]): boolean {
  */
 export function createLogEntry(
   details: chrome.webRequest.WebRequestDetails,
-  headers?: chrome.webRequest.HttpHeader[]
+  headers?: chrome.webRequest.HttpHeader[],
+  pageMetadata?: PageMetadata
 ): LogEntry {
   const headerMap: Record<string, string> = {};
 
@@ -71,6 +72,7 @@ export function createLogEntry(
     initiator: details.initiator,
     headers: Object.keys(headerMap).length > 0 ? headerMap : undefined,
     dedupeKey,
+    pageMetadata,
   };
 }
 

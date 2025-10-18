@@ -6,7 +6,7 @@
 import type { StateManager } from './state-manager';
 import type { RequestFilter } from './request-filter';
 import type { RequestLogger } from './request-logger';
-import type { Settings } from '@/types';
+import type { Settings, PageMetadata } from '@/types';
 
 /**
  * RequestProcessor coordinates the request handling workflow
@@ -23,10 +23,12 @@ export class RequestProcessor {
    * Process a web request through the monitoring pipeline
    * @param details Web request details
    * @param headers Optional request headers
+   * @param pageMetadata Optional page metadata from content script
    */
   async processRequest(
     details: chrome.webRequest.WebRequestDetails,
-    headers?: chrome.webRequest.HttpHeader[]
+    headers?: chrome.webRequest.HttpHeader[],
+    pageMetadata?: PageMetadata
   ): Promise<void> {
     try {
       // Step 1: Check if monitoring is enabled
@@ -40,7 +42,7 @@ export class RequestProcessor {
       }
 
       // Step 3: Log the request
-      await this.logger.logRequest(details, headers);
+      await this.logger.logRequest(details, headers, pageMetadata);
 
       console.log('Request logged:', details.url);
     } catch (error) {

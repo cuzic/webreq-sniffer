@@ -5,6 +5,7 @@
 
 import { createLogEntry, isDuplicate } from './logging';
 import type { StateManager } from './state-manager';
+import type { PageMetadata } from '@/types';
 
 /**
  * RequestLogger handles creation and storage of log entries
@@ -16,13 +17,15 @@ export class RequestLogger {
    * Log a web request
    * @param details Web request details
    * @param headers Optional request headers
+   * @param pageMetadata Optional page metadata from content script
    */
   async logRequest(
     details: chrome.webRequest.WebRequestDetails,
-    headers?: chrome.webRequest.HttpHeader[]
+    headers?: chrome.webRequest.HttpHeader[],
+    pageMetadata?: PageMetadata
   ): Promise<void> {
     // Create log entry
-    const entry = createLogEntry(details, headers);
+    const entry = createLogEntry(details, headers, pageMetadata);
 
     // Get current log data and settings (force refresh to avoid stale cache)
     const logData = await this.stateManager.getLogData(true);

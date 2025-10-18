@@ -8,6 +8,7 @@ import { ExportError } from '@/lib/errors';
 import { EXPORT } from '@/lib/constants';
 import { renderTemplate } from '@/lib/template';
 import { getBuiltInTemplate } from '@/lib/builtinTemplates';
+import { sanitizeFilename } from '@/lib/filename';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -163,12 +164,16 @@ export function generateFilename(
 ): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
+  const time = now.toISOString().slice(11, 19).replace(/:/g, '-'); // HH-mm-ss
 
-  // Extract domain from first entry's URL
+  // Extract domain and metadata from first entry
   let domain: string = EXPORT.DEFAULT_DOMAIN;
-  if (entries.length > 0 && entries[0]) {
+  const firstEntry = entries.length > 0 ? entries[0] : null;
+  const metadata = firstEntry?.pageMetadata;
+
+  if (firstEntry) {
     try {
-      const url = new URL(entries[0].url);
+      const url = new URL(firstEntry.url);
       domain = url.hostname.replace(/[^a-zA-Z0-9.-]/g, '_');
     } catch {
       // Invalid URL, use default
@@ -179,10 +184,34 @@ export function generateFilename(
   const ext = EXPORT.EXTENSIONS[format];
 
   // Replace placeholders
-  return template
+  let filename = template
     .replace(/{date}/g, date)
+    .replace(/{time}/g, time)
+    .replace(/{timestamp}/g, String(Date.now()))
     .replace(/{domain}/g, domain)
     .replace(/{ext}/g, ext);
+
+  // Page metadata variables
+  if (metadata) {
+    filename = filename
+      .replace(/{pageTitle}/g, metadata.pageTitle || 'untitled')
+      .replace(/{ogTitle}/g, metadata.ogTitle || metadata.pageTitle || 'untitled')
+      .replace(
+        /{videoTitle}/g,
+        metadata.videoTitle || metadata.ogTitle || metadata.pageTitle || 'untitled'
+      )
+      .replace(/{metaTitle}/g, metadata.metaTitle || metadata.pageTitle || 'untitled');
+  } else {
+    // Fallback if no metadata
+    filename = filename
+      .replace(/{pageTitle}/g, 'untitled')
+      .replace(/{ogTitle}/g, 'untitled')
+      .replace(/{videoTitle}/g, 'untitled')
+      .replace(/{metaTitle}/g, 'untitled');
+  }
+
+  // Sanitize filename
+  return sanitizeFilename(filename);
 }
 
 /**

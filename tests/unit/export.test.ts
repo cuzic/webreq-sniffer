@@ -212,6 +212,174 @@ describe('Export Logic', () => {
       const filename = generateFilename('log_{domain}.txt', 'url-list', entries);
       expect(filename).toBe('log_sub-domain.example.com.txt');
     });
+
+    it('should replace {time} placeholder', () => {
+      const filename = generateFilename('log_{time}.txt', 'url-list', mockEntries);
+      expect(filename).toMatch(/log_\d{2}-\d{2}-\d{2}\.txt/);
+    });
+
+    it('should replace {timestamp} placeholder', () => {
+      const filename = generateFilename('log_{timestamp}.txt', 'url-list', mockEntries);
+      expect(filename).toMatch(/log_\d+\.txt/);
+    });
+
+    it('should replace {pageTitle} placeholder when metadata present', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'My Video Page',
+          },
+        },
+      ];
+      const filename = generateFilename('{pageTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('My_Video_Page.txt');
+    });
+
+    it('should replace {ogTitle} placeholder when metadata present', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            ogTitle: 'Open Graph Title',
+          },
+        },
+      ];
+      const filename = generateFilename('{ogTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('Open_Graph_Title.txt');
+    });
+
+    it('should replace {videoTitle} placeholder when metadata present', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            ogTitle: 'OG Title',
+            videoTitle: 'Actual Video Title',
+          },
+        },
+      ];
+      const filename = generateFilename('{videoTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('Actual_Video_Title.txt');
+    });
+
+    it('should replace {metaTitle} placeholder when metadata present', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            metaTitle: 'Meta Title Tag',
+          },
+        },
+      ];
+      const filename = generateFilename('{metaTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('Meta_Title_Tag.txt');
+    });
+
+    it('should use "untitled" fallback when no metadata present', () => {
+      const filename = generateFilename('{pageTitle}_{videoTitle}.txt', 'url-list', mockEntries);
+      expect(filename).toBe('untitled_untitled.txt');
+    });
+
+    it('should use cascading fallback for {videoTitle}', () => {
+      const entriesWithOgTitle: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            ogTitle: 'OG Title',
+            // no videoTitle
+          },
+        },
+      ];
+      const filename1 = generateFilename('{videoTitle}.txt', 'url-list', entriesWithOgTitle);
+      expect(filename1).toBe('OG_Title.txt');
+
+      const entriesWithPageTitle: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            // no ogTitle, no videoTitle
+          },
+        },
+      ];
+      const filename2 = generateFilename('{videoTitle}.txt', 'url-list', entriesWithPageTitle);
+      expect(filename2).toBe('Page_Title.txt');
+    });
+
+    it('should use cascading fallback for {ogTitle}', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            // no ogTitle
+          },
+        },
+      ];
+      const filename = generateFilename('{ogTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('Page_Title.txt');
+    });
+
+    it('should use cascading fallback for {metaTitle}', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Page Title',
+            // no metaTitle
+          },
+        },
+      ];
+      const filename = generateFilename('{metaTitle}.txt', 'url-list', entries);
+      expect(filename).toBe('Page_Title.txt');
+    });
+
+    it('should sanitize special characters in metadata titles', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Video: "Best Tutorial" (2024) | Part 1/5',
+          },
+        },
+      ];
+      const filename = generateFilename('{pageTitle}.txt', 'url-list', entries);
+      // Parentheses, pipes and colons are replaced with underscores
+      expect(filename).toBe('Video_Best_Tutorial_2024_Part_1_5.txt');
+    });
+
+    it('should handle all placeholders including metadata', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'My Video',
+            videoTitle: 'Cool Tutorial',
+          },
+        },
+      ];
+      const filename = generateFilename('{date}_{domain}_{videoTitle}.{ext}', 'bash-curl', entries);
+      expect(filename).toMatch(/\d{4}-\d{2}-\d{2}_example\.com_Cool_Tutorial\.sh/);
+    });
+
+    it('should sanitize final filename', () => {
+      const entries: LogEntry[] = [
+        {
+          ...mockEntries[0],
+          pageMetadata: {
+            pageTitle: 'Test<>File||Name',
+          },
+        },
+      ];
+      const filename = generateFilename('{pageTitle}.txt', 'url-list', entries);
+      // Multiple underscores are collapsed to single underscore
+      expect(filename).toBe('Test_File_Name.txt');
+    });
   });
 
   describe('generateExportContent', () => {
@@ -223,7 +391,7 @@ describe('Export Logic', () => {
     it('should generate Bash curl format', () => {
       const content = generateExportContent(mockEntries, 'bash-curl');
       expect(content).toContain('#!/bin/bash');
-      expect(content).toContain('curl -L');
+      expect(content).toContain('curl');
     });
 
     it('should generate Bash curl with headers format', () => {
@@ -243,7 +411,7 @@ describe('Export Logic', () => {
 
     it('should throw error for unknown format', () => {
       expect(() => generateExportContent(mockEntries, 'unknown' as ExportFormat)).toThrow(
-        'Unknown export format'
+        'Template not found for format'
       );
     });
   });

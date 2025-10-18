@@ -91,6 +91,17 @@ export const logHeadersSchema = z
   })
   .optional();
 
+export const pageMetadataSchema = z
+  .object({
+    pageTitle: z.string(),
+    ogTitle: z.string().optional(),
+    ogDescription: z.string().optional(),
+    metaTitle: z.string().optional(),
+    metaDescription: z.string().optional(),
+    videoTitle: z.string().optional(),
+  })
+  .optional();
+
 export const logEntrySchema = z.object({
   id: z.string(),
   requestId: z.string(),
@@ -103,6 +114,7 @@ export const logEntrySchema = z.object({
   initiator: z.string().optional(),
   headers: logHeadersSchema,
   dedupeKey: z.string(),
+  pageMetadata: pageMetadataSchema,
 });
 
 // ========================================

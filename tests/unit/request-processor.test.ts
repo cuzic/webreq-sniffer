@@ -118,7 +118,7 @@ describe('RequestProcessor', () => {
 
       await processor.processRequest(details);
 
-      expect(logSpy).toHaveBeenCalledWith(details, undefined);
+      expect(logSpy).toHaveBeenCalledWith(details, undefined, undefined);
     });
 
     it('should process when monitoring scope is allTabs', async () => {
@@ -149,7 +149,7 @@ describe('RequestProcessor', () => {
 
       await processor.processRequest(details);
 
-      expect(logSpy).toHaveBeenCalledWith(details, undefined);
+      expect(logSpy).toHaveBeenCalledWith(details, undefined, undefined);
     });
 
     it('should skip when request does not match filter', async () => {
@@ -219,7 +219,7 @@ describe('RequestProcessor', () => {
 
       await processor.processRequest(details);
 
-      expect(logSpy).toHaveBeenCalledWith(details, undefined);
+      expect(logSpy).toHaveBeenCalledWith(details, undefined, undefined);
     });
 
     it('should handle errors gracefully', async () => {
@@ -290,7 +290,7 @@ describe('RequestProcessor', () => {
 
       await processor.processRequest(details, headers);
 
-      expect(logSpy).toHaveBeenCalledWith(details, headers);
+      expect(logSpy).toHaveBeenCalledWith(details, headers, undefined);
     });
   });
 

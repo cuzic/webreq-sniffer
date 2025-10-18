@@ -78,6 +78,18 @@ export interface LogHeaders {
   // temporarily if enabled, NOT saved to storage
 }
 
+/**
+ * Page Metadata collected from Content Script
+ */
+export interface PageMetadata {
+  pageTitle: string; // document.title
+  ogTitle?: string; // <meta property="og:title">
+  ogDescription?: string; // <meta property="og:description">
+  metaTitle?: string; // <meta name="title">
+  metaDescription?: string; // <meta name="description">
+  videoTitle?: string; // Video player-specific title
+}
+
 export interface LogEntry {
   id: string; // Internal unique ID (e.g., UUID)
   requestId: string; // From webRequest API
@@ -90,6 +102,7 @@ export interface LogEntry {
   initiator?: string; // e.g., "https://example.com"
   headers?: LogHeaders;
   dedupeKey: string; // Hash of (url + key headers) for deduplication
+  pageMetadata?: PageMetadata; // Page metadata from content script
 }
 
 // ========================================
