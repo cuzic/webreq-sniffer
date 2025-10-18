@@ -9,11 +9,11 @@
 
 ## 🔥 高優先度
 
-### 1. Popup.tsxの分割（カスタムフック化）
+### 1. Popup.tsxの分割（カスタムフック化） ✅ **完了**
 
 **現状の問題**:
 
-- Popup.tsx が398行と大きい
+- Popup.tsx が403行と大きい
 - 16個のハンドラー関数が1つのコンポーネントに集中
 - 状態管理とビジネスロジックが混在
 
@@ -169,6 +169,33 @@ export function useMonitoring() {
 
 **実装難易度**: ⭐⭐⭐☆☆（中）
 **所要時間**: 約2時間
+
+**実装完了 (2025-10-18)**:
+
+- ✅ `/src/popup/hooks/useMonitoring.ts` を作成（103行）
+  - 監視状態管理（status, loading）
+  - handleStartStop - 監視の開始/停止
+  - handleScopeChange - スコープ変更
+  - handleClear - ログクリア
+- ✅ `/src/popup/hooks/useSelection.ts` を作成（68行）
+  - 選択状態管理（selectedIds）
+  - handleToggle, handleSelectAll, handleClearAll, handleInvertSelection
+  - entriesToExport - エクスポート対象エントリーの計算
+- ✅ `/src/popup/hooks/useEntryActions.ts` を作成（115行）
+  - 8つのエントリーアクションハンドラー
+  - クリップボード操作、タブ操作、エクスポート、詳細表示
+- ✅ `Popup.tsx` をリファクタリング
+  - **403行 → 165行（59%削減）**
+  - カスタムフックの使用によりロジック分離
+  - UIコンポーネントとしての責務に集中
+- ✅ ビルド成功確認済み
+
+**効果**:
+
+- コンポーネントが大幅に簡潔に（403行 → 165行）
+- 関心の分離（UI / ビジネスロジック）
+- テストが容易（フックを独立してテスト可能）
+- 再利用性の向上（フックは他のコンポーネントでも利用可能）
 
 ---
 

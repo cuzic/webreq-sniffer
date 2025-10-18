@@ -3,7 +3,8 @@
  * Export and clear log actions
  */
 
-import type { ExportFormat } from '@/types';
+import { useState } from 'react';
+import type { ExportFormat, LogEntry } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,18 +24,39 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Download, Trash2 } from 'lucide-react';
+import { ExportDialog } from './ExportDialog';
 
 interface LogActionsProps {
   entryCount: number;
   selectedCount: number;
+  entries: LogEntry[];
   onExport: (format: ExportFormat) => void;
   onClear: () => void;
 }
 
-export function LogActions({ entryCount, selectedCount, onExport, onClear }: LogActionsProps) {
+export function LogActions({
+  entryCount,
+  selectedCount,
+  entries,
+  onExport,
+  onClear,
+}: LogActionsProps) {
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('bash-curl');
+
   const hasEntries = entryCount > 0;
   const exportLabel =
     selectedCount > 0 ? `選択をダウンロード (${selectedCount}件)` : 'ログをダウンロード';
+
+  function handleFormatSelect(format: ExportFormat) {
+    setSelectedFormat(format);
+    setExportDialogOpen(true);
+  }
+
+  function handleExportConfirm() {
+    setExportDialogOpen(false);
+    onExport(selectedFormat);
+  }
 
   return (
     <div className="space-y-3">
@@ -47,19 +69,32 @@ export function LogActions({ entryCount, selectedCount, onExport, onClear }: Log
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuItem onClick={() => onExport('url-list')}>URL List (.txt)</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('bash-curl')}>Bash curl (.sh)</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('bash-curl-headers')}>
+          <DropdownMenuItem onClick={() => handleFormatSelect('url-list')}>
+            URL List (.txt)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleFormatSelect('bash-curl')}>
+            Bash curl (.sh)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleFormatSelect('bash-curl-headers')}>
             Bash curl with headers (.sh)
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('bash-yt-dlp')}>
+          <DropdownMenuItem onClick={() => handleFormatSelect('bash-yt-dlp')}>
             Bash yt-dlp (.sh)
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onExport('powershell')}>
+          <DropdownMenuItem onClick={() => handleFormatSelect('powershell')}>
             PowerShell (.ps1)
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Export Preview Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        format={selectedFormat}
+        entries={entries}
+        onConfirm={handleExportConfirm}
+      />
 
       {/* Clear Button with Confirmation */}
       <AlertDialog>

@@ -280,7 +280,11 @@ describe('Export Logic', () => {
     });
 
     it('should use "untitled" fallback when no metadata present', () => {
-      const filename = generateFilename('{pageTitle}_{videoTitle}.txt', 'url-list', mockEntries);
+      const filename = generateFilename(
+        '{pageTitle | default("untitled")}_{videoTitle | default("untitled")}.txt',
+        'url-list',
+        mockEntries
+      );
       expect(filename).toBe('untitled_untitled.txt');
     });
 

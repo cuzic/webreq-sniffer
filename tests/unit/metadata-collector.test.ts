@@ -27,7 +27,6 @@ describe('Metadata Collector', () => {
         title: 'Test Page Title',
         querySelector: () => null,
         querySelectorAll: () => [],
-        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -46,7 +45,6 @@ describe('Metadata Collector', () => {
           if (selector === 'meta[property="og:title"]') return ogTitleElement;
           return null;
         },
-        querySelectorAll: () => [],
         querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
