@@ -40,8 +40,13 @@ async function getPageMetadata(tabId: number): Promise<PageMetadata | undefined>
   }
 
   try {
+    // Get current settings to access custom selectors
+    const stateManager = getStateManager();
+    const settings = await stateManager.getSettings();
+
     const response = await chrome.tabs.sendMessage(tabId, {
       type: 'GET_PAGE_METADATA',
+      customSelectors: settings.customSelectors,
     });
     return response?.metadata;
   } catch {

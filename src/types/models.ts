@@ -64,6 +64,7 @@ export interface Settings {
   exportSettings: ExportSettings;
   ui: UISettings;
   customPresets: CustomPreset[];
+  customSelectors: CustomSelector[]; // CSS selectors for extracting video titles
 }
 
 // ========================================
@@ -88,6 +89,18 @@ export interface PageMetadata {
   metaTitle?: string; // <meta name="title">
   metaDescription?: string; // <meta name="description">
   videoTitle?: string; // Video player-specific title
+}
+
+/**
+ * Custom CSS Selector for extracting video title from specific sites
+ */
+export interface CustomSelector {
+  id: string; // Unique identifier
+  name: string; // Display name (e.g., "YouTube")
+  pattern: string; // URL pattern to match (e.g., "youtube.com", "*.vimeo.com/*")
+  selector: string; // CSS selector for video title element
+  attribute?: string; // Optional: attribute to extract (default: textContent)
+  enabled: boolean;
 }
 
 export interface LogEntry {

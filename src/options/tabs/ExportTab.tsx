@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { TemplateSelector } from '../components/TemplateSelector';
 import { TemplatePreview } from '../components/TemplatePreview';
 import { TemplateEditorDialog } from '../components/TemplateEditorDialog';
+import { CustomSelectorManager } from '../components/CustomSelectorManager';
 import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -271,6 +272,9 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Custom Selector Manager */}
+      <CustomSelectorManager settings={settings} onSettingsChange={onSettingsChange} />
 
       {/* Template Editor Dialog */}
       <TemplateEditorDialog

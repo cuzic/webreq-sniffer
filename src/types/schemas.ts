@@ -63,6 +63,15 @@ export const customPresetSchema = z.object({
   hlsMpdMode: hlsMpdModeSchema,
 });
 
+export const customSelectorSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  pattern: z.string(), // URL pattern to match
+  selector: z.string(), // CSS selector
+  attribute: z.string().optional(), // Optional attribute to extract
+  enabled: z.boolean(),
+});
+
 export const settingsSchema = z.object({
   targetScope: targetScopeSchema,
   presets: presetsSchema,
@@ -77,6 +86,7 @@ export const settingsSchema = z.object({
   exportSettings: exportSettingsSchema,
   ui: uiSettingsSchema,
   customPresets: z.array(customPresetSchema),
+  customSelectors: z.array(customSelectorSchema),
 });
 
 // ========================================
@@ -207,6 +217,36 @@ export const defaultSettings: z.infer<typeof settingsSchema> = {
     showBadge: true,
   },
   customPresets: [],
+  customSelectors: [
+    {
+      id: 'youtube',
+      name: 'YouTube',
+      pattern: 'youtube.com',
+      selector: 'h1.ytd-video-primary-info-renderer, h1.ytd-watch-metadata yt-formatted-string',
+      enabled: true,
+    },
+    {
+      id: 'vimeo',
+      name: 'Vimeo',
+      pattern: 'vimeo.com',
+      selector: 'h1.title, h1[class*="title"]',
+      enabled: true,
+    },
+    {
+      id: 'dailymotion',
+      name: 'Dailymotion',
+      pattern: 'dailymotion.com',
+      selector: 'h1.video-title, h1[class*="VideoTitle"]',
+      enabled: true,
+    },
+    {
+      id: 'twitch',
+      name: 'Twitch',
+      pattern: 'twitch.tv',
+      selector: 'h1[data-a-target="stream-title"], h2.tw-title',
+      enabled: true,
+    },
+  ],
 };
 
 export const defaultLogData: z.infer<typeof logDataSchema> = {

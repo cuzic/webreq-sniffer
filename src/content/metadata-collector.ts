@@ -3,12 +3,13 @@
  * Extracts metadata from the current page for filename generation
  */
 
-import type { PageMetadata } from '@/types';
+import type { PageMetadata, CustomSelector } from '@/types';
 
 /**
  * Collect page metadata from the current document
+ * @param customSelectors Optional array of custom CSS selectors for extracting video titles
  */
-export function collectPageMetadata(): PageMetadata {
+export function collectPageMetadata(customSelectors?: CustomSelector[]): PageMetadata {
   const metadata: PageMetadata = {
     pageTitle: document.title,
   };
@@ -47,60 +48,73 @@ export function collectPageMetadata(): PageMetadata {
     }
   }
 
-  // Extract video player-specific title
-  metadata.videoTitle = extractVideoTitle();
+  // Extract video player-specific title using custom selectors
+  metadata.videoTitle = extractVideoTitle(customSelectors);
 
   return metadata;
 }
 
 /**
- * Extract video title from known video player implementations
+ * Check if current URL matches a pattern
+ * Supports wildcards: *, youtube.com, *.example.com, etc.
  */
-function extractVideoTitle(): string | undefined {
-  const hostname = window.location.hostname;
+function matchesPattern(url: string, pattern: string): boolean {
+  // Simple pattern matching - convert pattern to regex
+  const regexPattern = pattern
+    .replace(/\./g, '\\.') // Escape dots
+    .replace(/\*/g, '.*'); // Convert * to .*
 
-  // YouTube
-  if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
-    // Modern YouTube layout
-    const ytTitle = document.querySelector(
-      'h1.ytd-video-primary-info-renderer, h1.ytd-watch-metadata yt-formatted-string'
-    );
-    if (ytTitle) {
-      return ytTitle.textContent?.trim();
+  const regex = new RegExp(regexPattern, 'i');
+  return regex.test(url);
+}
+
+/**
+ * Extract value from element using selector and optional attribute
+ */
+function extractValue(selector: string, attribute?: string): string | undefined {
+  try {
+    const element = document.querySelector(selector);
+    if (!element) return undefined;
+
+    if (attribute) {
+      // Extract from attribute
+      const value = element.getAttribute(attribute);
+      return value?.trim();
+    } else {
+      // Extract from textContent
+      return element.textContent?.trim();
     }
+  } catch (error) {
+    // Invalid selector or other error
+    console.warn(`Failed to extract value with selector "${selector}":`, error);
+    return undefined;
+  }
+}
 
-    // Fallback to meta tag
-    const ytMeta = document.querySelector('meta[name="title"]');
-    if (ytMeta) {
-      return ytMeta.getAttribute('content')?.trim();
+/**
+ * Extract video title using custom selectors or fallback to built-in logic
+ * @param customSelectors Optional array of custom CSS selectors
+ */
+function extractVideoTitle(customSelectors?: CustomSelector[]): string | undefined {
+  const currentUrl = window.location.href;
+
+  // Try custom selectors first (if provided)
+  if (customSelectors && customSelectors.length > 0) {
+    for (const config of customSelectors) {
+      // Skip disabled selectors
+      if (!config.enabled) continue;
+
+      // Check if current URL matches the pattern
+      if (matchesPattern(currentUrl, config.pattern)) {
+        const title = extractValue(config.selector, config.attribute);
+        if (title) {
+          return title;
+        }
+      }
     }
   }
 
-  // Vimeo
-  if (hostname.includes('vimeo.com')) {
-    const vimeoTitle = document.querySelector('h1.title, h1[class*="title"]');
-    if (vimeoTitle) {
-      return vimeoTitle.textContent?.trim();
-    }
-  }
-
-  // Dailymotion
-  if (hostname.includes('dailymotion.com')) {
-    const dmTitle = document.querySelector('meta[property="og:title"]');
-    if (dmTitle) {
-      return dmTitle.getAttribute('content')?.trim();
-    }
-  }
-
-  // Twitch
-  if (hostname.includes('twitch.tv')) {
-    const twitchTitle = document.querySelector('h1[data-a-target="stream-title"]');
-    if (twitchTitle) {
-      return twitchTitle.textContent?.trim();
-    }
-  }
-
-  // Generic video element title
+  // Fallback: Generic video element title
   const videoElement = document.querySelector('video');
   if (videoElement) {
     const title = videoElement.getAttribute('title');
