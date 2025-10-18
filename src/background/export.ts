@@ -16,6 +16,27 @@ import {
 } from '@/lib/batch-download-generator';
 
 /**
+ * Check if entries contain manifest with variants
+ * Used to determine which export formats are appropriate
+ */
+export function hasManifestVariants(entries: LogEntry[]): boolean {
+  if (entries.length !== 1) {
+    return false;
+  }
+
+  const variants = entries[0]?.pageMetadata?.manifestMetadata?.variants;
+  return (variants?.length ?? 0) > 0;
+}
+
+/**
+ * Check if entry URL is a manifest file
+ */
+export function isManifestUrl(url: string): boolean {
+  const urlLower = url.toLowerCase();
+  return urlLower.includes('.m3u8') || urlLower.includes('.mpd');
+}
+
+/**
  * Escape string for Bash shell (single quotes)
  */
 export function escapeShellArg(str: string): string {

@@ -3,7 +3,7 @@
  * Export and clear log actions
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { ExportFormat, LogEntry } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Download, Trash2 } from 'lucide-react';
 import { ExportDialog } from './ExportDialog';
+import { hasManifestVariants } from '@/background/export';
 
 interface LogActionsProps {
   entryCount: number;
@@ -48,6 +49,32 @@ export function LogActions({
   const exportLabel =
     selectedCount > 0 ? `選択をダウンロード (${selectedCount}件)` : 'ログをダウンロード';
 
+  // Determine if entries contain manifest with variants
+  const isManifest = useMemo(() => hasManifestVariants(entries), [entries]);
+
+  // Define available formats based on entry type
+  const availableFormats = useMemo(() => {
+    if (isManifest) {
+      // Manifest with variants: only batch download formats
+      return [
+        { format: 'bash-batch-download' as ExportFormat, label: 'Bash Batch Download (.sh)' },
+        {
+          format: 'powershell-batch-download' as ExportFormat,
+          label: 'PowerShell Batch Download (.ps1)',
+        },
+      ];
+    } else {
+      // Regular URLs: standard export formats
+      return [
+        { format: 'url-list' as ExportFormat, label: 'URL List (.txt)' },
+        { format: 'bash-curl' as ExportFormat, label: 'Bash curl (.sh)' },
+        { format: 'bash-curl-headers' as ExportFormat, label: 'Bash curl with headers (.sh)' },
+        { format: 'bash-yt-dlp' as ExportFormat, label: 'Bash yt-dlp (.sh)' },
+        { format: 'powershell' as ExportFormat, label: 'PowerShell (.ps1)' },
+      ];
+    }
+  }, [isManifest]);
+
   function handleFormatSelect(format: ExportFormat) {
     setSelectedFormat(format);
     setExportDialogOpen(true);
@@ -69,27 +96,11 @@ export function LogActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
-          <DropdownMenuItem onClick={() => handleFormatSelect('url-list')}>
-            URL List (.txt)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('bash-curl')}>
-            Bash curl (.sh)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('bash-curl-headers')}>
-            Bash curl with headers (.sh)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('bash-yt-dlp')}>
-            Bash yt-dlp (.sh)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('bash-batch-download')}>
-            Bash Batch Download (.sh)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('powershell')}>
-            PowerShell (.ps1)
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleFormatSelect('powershell-batch-download')}>
-            PowerShell Batch Download (.ps1)
-          </DropdownMenuItem>
+          {availableFormats.map(({ format, label }) => (
+            <DropdownMenuItem key={format} onClick={() => handleFormatSelect(format)}>
+              {label}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
