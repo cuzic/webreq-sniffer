@@ -3,8 +3,8 @@
  * User interface for WebreqSniffer extension
  */
 
-import { useEffect, useState } from 'react';
-import type { ExportFormat } from '@/types';
+import { useEffect, useState, useMemo } from 'react';
+import type { ExportFormat, LogEntry } from '@/types';
 import {
   startMonitoring,
   stopMonitoring,
@@ -18,11 +18,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Settings } from 'lucide-react';
 import { MonitoringControl } from './components/MonitoringControl';
 import { LogActions } from './components/LogActions';
+import { SearchBar } from './components/SearchBar';
+import { FilterDropdown } from './components/FilterDropdown';
+import { LogList } from './components/LogList';
 
 interface Status {
   isMonitoring: boolean;
   monitoringScope: 'activeTab' | 'allTabs';
   entryCount: number;
+  entries: LogEntry[];
 }
 
 export function Popup() {
@@ -30,8 +34,11 @@ export function Popup() {
     isMonitoring: false,
     monitoringScope: 'activeTab',
     entryCount: 0,
+    entries: [],
   });
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('all');
 
   // Load status on mount and set up refresh interval
   useEffect(() => {
@@ -47,6 +54,7 @@ export function Popup() {
         isMonitoring: result.isMonitoring,
         monitoringScope: result.monitoringScope,
         entryCount: result.entryCount,
+        entries: result.entries,
       });
     } catch (error) {
       console.error('Failed to load status:', error);
@@ -116,6 +124,23 @@ export function Popup() {
     }
   }
 
+  // Filter entries based on search term and filter type
+  const filteredEntries = useMemo(() => {
+    return status.entries.filter((entry) => {
+      // Search term filter
+      if (searchTerm && !entry.url.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+
+      // Resource type filter
+      if (filterType !== 'all' && entry.type !== filterType) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [status.entries, searchTerm, filterType]);
+
   return (
     <div className="w-[400px] p-4 space-y-4">
       {/* Header */}
@@ -150,9 +175,36 @@ export function Popup() {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">{status.entryCount.toLocaleString()}</div>
-          <p className="text-sm text-muted-foreground mt-1">キャプチャされたリクエスト</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            キャプチャされたリクエスト
+            {searchTerm || filterType !== 'all' ? (
+              <span className="ml-2">（{filteredEntries.length}件を表示）</span>
+            ) : null}
+          </p>
         </CardContent>
       </Card>
+
+      {/* Log Entries */}
+      {status.entryCount > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>ログエントリ</CardTitle>
+            <CardDescription>キャプチャされたリクエストの一覧</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Search and Filter */}
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <SearchBar value={searchTerm} onChange={setSearchTerm} />
+              </div>
+              <FilterDropdown value={filterType} onChange={setFilterType} />
+            </div>
+
+            {/* Log List */}
+            <LogList entries={filteredEntries} />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Log Actions */}
       <Card>

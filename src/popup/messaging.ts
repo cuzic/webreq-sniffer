@@ -3,7 +3,7 @@
  * Handles communication with Service Worker
  */
 
-import type { ExportFormat } from '@/types';
+import type { ExportFormat, LogEntry } from '@/types';
 import { sendMessage } from '@/lib/messaging';
 
 /**
@@ -35,6 +35,7 @@ export async function getStatus(): Promise<{
   monitoringScope: 'activeTab' | 'allTabs';
   activeTabId?: number;
   entryCount: number;
+  entries: LogEntry[];
 }> {
   return sendMessage({
     type: 'get-status',

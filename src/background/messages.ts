@@ -3,7 +3,7 @@
  * Handles messages from Popup and Options pages
  */
 
-import type { Message, MessageResponse } from '@/types';
+import type { Message, MessageResponse, LogEntry } from '@/types';
 import { getLogData, getSettings, updateLogData, updateSettings } from './storage';
 import { updateBadge } from './badge';
 import { exportLogs } from './export';
@@ -48,6 +48,7 @@ export async function getStatus(): Promise<{
   monitoringScope: 'activeTab' | 'allTabs';
   activeTabId?: number;
   entryCount: number;
+  entries: LogEntry[];
 }> {
   const logData = await getLogData();
 
@@ -56,6 +57,7 @@ export async function getStatus(): Promise<{
     monitoringScope: logData.monitoringScope,
     activeTabId: logData.activeTabId,
     entryCount: logData.entries.length,
+    entries: logData.entries,
   };
 }
 
