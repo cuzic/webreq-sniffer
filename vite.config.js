@@ -3,9 +3,7 @@ import { crx } from '@crxjs/vite-plugin';
 import manifest from './manifest.json';
 
 export default defineConfig({
-  plugins: [
-    crx({ manifest })
-  ],
+  plugins: [crx({ manifest })],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -14,15 +12,15 @@ export default defineConfig({
         // Ensure consistent chunk names for better caching
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
-      }
-    }
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
   },
   server: {
     port: 5173,
     strictPort: true,
     hmr: {
-      port: 5173
-    }
-  }
+      port: 5173,
+    },
+  },
 });

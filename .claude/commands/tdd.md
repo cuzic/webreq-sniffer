@@ -9,6 +9,7 @@ You are now in TDD mode. Follow the Test-Driven Development cycle strictly for i
 Execute the following phases in order:
 
 ### 1. PLAN Phase
+
 - Ask the user what feature or functionality they want to implement
 - Discuss and clarify the requirements
 - Define the acceptance criteria
@@ -21,6 +22,7 @@ Execute the following phases in order:
   - [ ] Verify - Run all tests
 
 ### 2. RED Phase
+
 - Write a failing test FIRST before any implementation
 - The test should clearly define the expected behavior
 - Run the test to confirm it fails (RED state)
@@ -28,6 +30,7 @@ Execute the following phases in order:
 - DO NOT write implementation code yet
 
 ### 3. GREEN Phase
+
 - Write the MINIMUM amount of code needed to make the test pass
 - Focus on making it work, not making it perfect
 - Run the test to confirm it passes (GREEN state)
@@ -35,6 +38,7 @@ Execute the following phases in order:
 - Avoid over-engineering at this stage
 
 ### 4. REFACTOR Phase
+
 - Now improve the code quality while keeping tests green
 - Apply best practices, remove duplication, improve naming
 - Ensure all tests still pass after each refactoring step
@@ -46,6 +50,7 @@ Execute the following phases in order:
   - SOLID principles
 
 ### 5. VERIFY Phase
+
 - Run the complete test suite to ensure nothing broke
 - Verify test coverage for the new feature
 - Check for edge cases that might need additional tests

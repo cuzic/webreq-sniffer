@@ -46,7 +46,7 @@ function expect(actual) {
       if (!(prop in actual)) {
         throw new Error(`Expected to have property ${prop}`);
       }
-    }
+    },
   };
 }
 
@@ -105,7 +105,9 @@ test('compilerOptions.moduleResolution should be bundler or node', () => {
   const resolution = tsconfig.compilerOptions.moduleResolution;
   const validResolutions = ['bundler', 'node', 'node16', 'nodenext'];
   if (!validResolutions.includes(resolution)) {
-    throw new Error(`Expected moduleResolution to be one of ${validResolutions.join(', ')} but got ${resolution}`);
+    throw new Error(
+      `Expected moduleResolution to be one of ${validResolutions.join(', ')} but got ${resolution}`
+    );
   }
 });
 

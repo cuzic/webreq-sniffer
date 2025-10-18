@@ -3,16 +3,8 @@
   "name": "WebreqSniffer",
   "version": "0.1.0",
   "description": "Monitors network requests and generates download scripts",
-  "permissions": [
-    "webRequest",
-    "storage",
-    "downloads",
-    "activeTab",
-    "unlimitedStorage"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["webRequest", "storage", "downloads", "activeTab", "unlimitedStorage"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "src/background/index.ts",
     "type": "module"

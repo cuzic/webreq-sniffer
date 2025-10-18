@@ -46,7 +46,7 @@ function expect(actual) {
       if (!(prop in actual)) {
         throw new Error(`Expected to have property ${prop}`);
       }
-    }
+    },
   };
 }
 

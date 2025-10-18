@@ -25,16 +25,22 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js",
+    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js",
     "test:package": "node tests/setup/verify-package-json.test.js",
     "test:vite": "node tests/setup/verify-vite-config.test.js",
     "test:typescript": "node tests/setup/verify-typescript-config.test.js",
+    "test:eslint": "node tests/setup/verify-eslint-prettier.test.js",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.2.0",
     "@types/chrome": "^0.1.24",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.6.2",
     "typescript": "^5.9.3",
     "vite": "^7.1.10"
   }

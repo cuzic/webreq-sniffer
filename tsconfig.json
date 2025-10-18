@@ -24,13 +24,6 @@
     "skipLibCheck": true,
     "types": ["chrome", "vite/client"]
   },
-  "include": [
-    "src/**/*",
-    "manifest.json"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "tests"
-  ]
+  "include": ["src/**/*", "manifest.json"],
+  "exclude": ["node_modules", "dist", "tests"]
 }
