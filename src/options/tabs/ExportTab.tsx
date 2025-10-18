@@ -13,6 +13,7 @@ import { TemplateSelector } from '../components/TemplateSelector';
 import { TemplatePreview } from '../components/TemplatePreview';
 import { TemplateEditorDialog } from '../components/TemplateEditorDialog';
 import { CustomSelectorManager } from '../components/CustomSelectorManager';
+import { TemplateEvaluationPreview } from '../components/TemplateEvaluationPreview';
 import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
 import { Plus, Edit, Trash2 } from 'lucide-react';
@@ -267,6 +268,157 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
                 <div>{'{{urlEncode query}}'}</div>
                 <div>{'{{upper string}}'}</div>
                 <div>{'{{lower string}}'}</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filename Template Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ファイル名テンプレート</CardTitle>
+          <CardDescription>
+            エクスポート時のファイル名を設定します。JavaScript式を使用できます。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="filename-template">テンプレート</Label>
+              <Textarea
+                id="filename-template"
+                value={settings.exportSettings.filenameTemplate}
+                onChange={(e) =>
+                  onSettingsChange({
+                    ...settings,
+                    exportSettings: {
+                      ...settings.exportSettings,
+                      filenameTemplate: e.target.value,
+                    },
+                  })
+                }
+                placeholder="{videoTitle ?? pageTitle}_{date}.{ext}"
+                className="font-mono text-sm"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                例: {'{videoTitle?.toLowerCase().replace(/\\s+/g, "_")}_{date}.{ext}'}
+              </p>
+            </div>
+
+            {/* Live Preview */}
+            <TemplateEvaluationPreview
+              template={settings.exportSettings.filenameTemplate}
+              format="bash-curl"
+            />
+
+            {/* Available Variables & Helpers */}
+            <div className="space-y-4 text-sm border-t pt-4">
+              <div>
+                <h4 className="font-medium mb-2">📋 利用可能な変数</h4>
+                <div className="grid grid-cols-3 gap-2 text-xs font-mono bg-muted p-3 rounded">
+                  <div>
+                    <span className="text-muted-foreground">// Page</span>
+                  </div>
+                  <div></div>
+                  <div></div>
+                  <div>{'pageTitle'}</div>
+                  <div>{'ogTitle'}</div>
+                  <div>{'videoTitle'}</div>
+                  <div>{'metaTitle'}</div>
+                  <div>{'metaDescription'}</div>
+                  <div></div>
+                  <div>
+                    <span className="text-muted-foreground">// Manifest</span>
+                  </div>
+                  <div></div>
+                  <div></div>
+                  <div>{'manifestTitle'}</div>
+                  <div>{'manifestType'}</div>
+                  <div>{'segmentPattern'}</div>
+                  <div>{'programDate'}</div>
+                  <div></div>
+                  <div></div>
+                  <div>
+                    <span className="text-muted-foreground">// System</span>
+                  </div>
+                  <div></div>
+                  <div></div>
+                  <div>{'date'}</div>
+                  <div>{'time'}</div>
+                  <div>{'timestamp'}</div>
+                  <div>{'domain'}</div>
+                  <div>{'ext'}</div>
+                  <div></div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-2">🛠️ ヘルパー関数</h4>
+                <div className="space-y-1 text-xs font-mono bg-muted p-3 rounded">
+                  <div>
+                    <span className="text-blue-600">sanitize</span>
+                    {'(str)'} - ファイル名用にサニタイズ
+                  </div>
+                  <div>
+                    <span className="text-blue-600">truncate</span>
+                    {'(str, len, suffix?)'} - 指定長で切り詰め
+                  </div>
+                  <div>
+                    <span className="text-blue-600">slugify</span>
+                    {'(str)'} - スラッグ化 (lowercase + dashes)
+                  </div>
+                  <div>
+                    <span className="text-blue-600">removeParens</span>
+                    {'(str)'} - 括弧【】[]()内を削除
+                  </div>
+                  <div>
+                    <span className="text-blue-600">capitalize</span>
+                    {'(str)'} - 先頭大文字化
+                  </div>
+                  <div>
+                    <span className="text-blue-600">remove</span>
+                    {'(str, pattern)'} - パターン削除
+                  </div>
+                  <div>
+                    <span className="text-blue-600">lowercase</span>
+                    {'(str)'} / <span className="text-blue-600">uppercase</span>
+                    {'(str)'} - 大文字小文字変換
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium mb-2">💡 サンプル</h4>
+                <div className="space-y-2 text-xs">
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-mono text-blue-600 mb-1">
+                      {'{videoTitle?.toLowerCase().replace(/\\s+/g, "_")}_{date}.{ext}'}
+                    </div>
+                    <div className="text-muted-foreground">→ my_awesome_video_2025-10-18.sh</div>
+                  </div>
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-mono text-blue-600 mb-1">
+                      {'{slugify(truncate(videoTitle ?? pageTitle, 50))}_{timestamp}.{ext}'}
+                    </div>
+                    <div className="text-muted-foreground">
+                      → my-awesome-video-episode-1_1729259445000.sh
+                    </div>
+                  </div>
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-mono text-blue-600 mb-1">
+                      {'{manifestType === "hls" ? "stream" : "video"}_{domain}.{ext}'}
+                    </div>
+                    <div className="text-muted-foreground">→ stream_example.com.sh</div>
+                  </div>
+                  <div className="bg-muted p-2 rounded">
+                    <div className="font-mono text-blue-600 mb-1">
+                      {'{removeParens(videoTitle)}_{programDate}.{ext}'}
+                    </div>
+                    <div className="text-muted-foreground">→ Video Title_2025-10-18.sh</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
