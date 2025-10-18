@@ -40,6 +40,18 @@ export const targetScopeSchema = z.enum(['activeTab', 'allTabs']);
 
 export const hlsMpdModeSchema = z.enum(['playlistOnly', 'all']);
 
+export const customPresetSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  icon: z.string().optional(),
+  simpleFilters: z.array(z.string()),
+  regexFilters: z.array(z.string()),
+  resourceTypes: z.array(z.string()),
+  allowList: z.array(z.string()),
+  denyList: z.array(z.string()),
+  hlsMpdMode: hlsMpdModeSchema,
+});
+
 export const settingsSchema = z.object({
   targetScope: targetScopeSchema,
   presets: presetsSchema,
@@ -53,6 +65,7 @@ export const settingsSchema = z.object({
   limits: limitsSchema,
   exportSettings: exportSettingsSchema,
   ui: uiSettingsSchema,
+  customPresets: z.array(customPresetSchema),
 });
 
 // ========================================
@@ -168,6 +181,7 @@ export const defaultSettings: z.infer<typeof settingsSchema> = {
   ui: {
     showBadge: true,
   },
+  customPresets: [],
 };
 
 export const defaultLogData: z.infer<typeof logDataSchema> = {

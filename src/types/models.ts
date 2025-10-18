@@ -36,6 +36,18 @@ export interface UISettings {
 export type TargetScope = 'activeTab' | 'allTabs';
 export type HlsMpdMode = 'playlistOnly' | 'all';
 
+export interface CustomPreset {
+  id: string;
+  name: string;
+  icon?: string; // emoji
+  simpleFilters: string[];
+  regexFilters: string[];
+  resourceTypes: string[];
+  allowList: string[];
+  denyList: string[];
+  hlsMpdMode: HlsMpdMode;
+}
+
 export interface Settings {
   targetScope: TargetScope;
   presets: Presets;
@@ -49,6 +61,7 @@ export interface Settings {
   limits: Limits;
   exportSettings: ExportSettings;
   ui: UISettings;
+  customPresets: CustomPreset[];
 }
 
 // ========================================
