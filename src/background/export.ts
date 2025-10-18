@@ -9,6 +9,11 @@ import { EXPORT } from '@/lib/constants';
 import { renderTemplate } from '@/lib/template';
 import { getBuiltInTemplate } from '@/lib/builtinTemplates';
 import { sanitizeFilename } from '@/lib/filename';
+import {
+  safeEvaluate,
+  isJavaScriptExpression,
+  type TemplateContext,
+} from '@/lib/template-evaluator';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -156,6 +161,7 @@ export function generatePowerShell(entries: LogEntry[]): string {
 
 /**
  * Generate filename from template
+ * Supports both simple variables ({date}) and JavaScript expressions ({videoTitle?.toLowerCase()})
  */
 export function generateFilename(
   template: string,
@@ -183,65 +189,56 @@ export function generateFilename(
   // Determine extension
   const ext = EXPORT.EXTENSIONS[format];
 
-  // Replace placeholders
-  let filename = template
-    .replace(/{date}/g, date)
-    .replace(/{time}/g, time)
-    .replace(/{timestamp}/g, String(Date.now()))
-    .replace(/{domain}/g, domain)
-    .replace(/{ext}/g, ext);
-
-  // Page metadata variables
-  if (metadata) {
-    filename = filename
-      .replace(/{pageTitle}/g, metadata.pageTitle || 'untitled')
-      .replace(/{ogTitle}/g, metadata.ogTitle || metadata.pageTitle || 'untitled')
-      .replace(
-        /{videoTitle}/g,
-        metadata.videoTitle || metadata.ogTitle || metadata.pageTitle || 'untitled'
-      )
-      .replace(/{metaTitle}/g, metadata.metaTitle || metadata.pageTitle || 'untitled');
-
-    // Manifest metadata variables
-    if (metadata.manifestMetadata) {
-      const manifest = metadata.manifestMetadata;
-      filename = filename
-        .replace(/{manifestTitle}/g, manifest.title || 'untitled')
-        .replace(/{manifestType}/g, manifest.type)
-        .replace(/{segmentPattern}/g, manifest.segmentPattern || 'unknown');
-
-      if (manifest.programDateTime) {
-        // Extract date from ISO 8601 format
-        try {
-          const dateObj = new Date(manifest.programDateTime);
-          const manifestDate = dateObj.toISOString().slice(0, 10);
-          filename = filename.replace(/{programDate}/g, manifestDate);
-        } catch {
-          filename = filename.replace(/{programDate}/g, 'unknown');
-        }
-      } else {
-        filename = filename.replace(/{programDate}/g, 'unknown');
-      }
-    } else {
-      // Fallback if no manifest metadata
-      filename = filename
-        .replace(/{manifestTitle}/g, 'unknown')
-        .replace(/{manifestType}/g, 'unknown')
-        .replace(/{segmentPattern}/g, 'unknown')
-        .replace(/{programDate}/g, 'unknown');
+  // Extract program date from manifest
+  let programDate: string | undefined;
+  if (metadata?.manifestMetadata?.programDateTime) {
+    try {
+      const dateObj = new Date(metadata.manifestMetadata.programDateTime);
+      programDate = dateObj.toISOString().slice(0, 10);
+    } catch {
+      programDate = undefined;
     }
-  } else {
-    // Fallback if no metadata
-    filename = filename
-      .replace(/{pageTitle}/g, 'untitled')
-      .replace(/{ogTitle}/g, 'untitled')
-      .replace(/{videoTitle}/g, 'untitled')
-      .replace(/{metaTitle}/g, 'untitled')
-      .replace(/{manifestTitle}/g, 'unknown')
-      .replace(/{manifestType}/g, 'unknown')
-      .replace(/{segmentPattern}/g, 'unknown')
-      .replace(/{programDate}/g, 'unknown');
   }
+
+  // Create template context for expression evaluation
+  const context: TemplateContext = {
+    // Page metadata
+    pageTitle: metadata?.pageTitle,
+    ogTitle: metadata?.ogTitle,
+    videoTitle: metadata?.videoTitle,
+    metaTitle: metadata?.metaTitle,
+    metaDescription: metadata?.metaDescription,
+
+    // Manifest metadata
+    manifestTitle: metadata?.manifestMetadata?.title,
+    manifestType: metadata?.manifestMetadata?.type,
+    segmentPattern: metadata?.manifestMetadata?.segmentPattern,
+    programDate,
+
+    // System variables
+    date,
+    time,
+    timestamp: Date.now(),
+    domain,
+    ext,
+  };
+
+  // Process template with JavaScript expression support
+  const jsExpressionPattern = /\{([^}]+)\}/g;
+
+  const filename = template.replace(jsExpressionPattern, (match, expression) => {
+    const trimmedExpr = expression.trim();
+
+    // Check if it's a JavaScript expression
+    if (isJavaScriptExpression(trimmedExpr)) {
+      // Evaluate as JavaScript expression
+      return safeEvaluate(trimmedExpr, context, match);
+    }
+
+    // Simple variable reference - use context value
+    const value = context[trimmedExpr as keyof TemplateContext];
+    return String(value ?? '');
+  });
 
   // Sanitize filename
   return sanitizeFilename(filename);
