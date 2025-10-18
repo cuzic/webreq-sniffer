@@ -155,8 +155,9 @@ Invoke-WebRequest -Uri "https://example.com/video.m3u8" -Headers $headers
 - **Framework**: React 19 + TypeScript
 - **Build Tool**: Vite + CRXJS (Chrome Extension plugin)
 - **UI Library**: Tailwind CSS + shadcn/ui
-- **Storage**: chrome.storage API
-- **Validation**: Zod schemas
+- **Storage**: chrome.storage API with custom StateManager (5s cache TTL)
+- **Validation**: Zod schemas for runtime type safety
+- **Testing**: Vitest (201 tests passing)
 - **Code Quality**: ESLint + Prettier + Husky
 
 ### Project Structure
@@ -166,13 +167,21 @@ webreq-sniffer/
 ├── src/
 │   ├── background/          # Service Worker
 │   │   ├── index.ts         # Entry point
+│   │   ├── state-manager.ts # State management with caching
 │   │   ├── storage.ts       # chrome.storage wrapper
 │   │   ├── messages.ts      # Message handlers
 │   │   ├── listeners.ts     # webRequest listeners
-│   │   ├── filtering.ts     # Request filtering logic
-│   │   ├── logging.ts       # Log entry management
+│   │   ├── request-processor.ts  # Request processing coordinator
+│   │   ├── request-filter.ts     # Filtering logic encapsulation
+│   │   ├── request-logger.ts     # Log entry management
+│   │   ├── filtering.ts     # Core filtering functions
+│   │   ├── logging.ts       # Log utilities
 │   │   ├── export.ts        # Export script generation
 │   │   └── badge.ts         # Extension badge control
+│   ├── lib/                 # Shared utilities
+│   │   ├── constants.ts     # Centralized constants
+│   │   ├── errors.ts        # Custom error classes
+│   │   └── adapters/        # Storage adapters (Chrome/Mock)
 │   ├── popup/               # Popup UI
 │   │   ├── popup.tsx        # Entry point
 │   │   ├── Popup.tsx        # Main component
@@ -180,14 +189,18 @@ webreq-sniffer/
 │   ├── options/             # Options Page
 │   │   ├── options.tsx      # Entry point
 │   │   ├── Options.tsx      # Main component
-│   │   └── messaging.ts     # Chrome messaging
+│   │   ├── messaging.ts     # Chrome messaging
+│   │   └── tabs/            # Tab components
 │   ├── types/               # Type definitions
-│   │   ├── models.ts        # TypeScript types
+│   │   ├── models.ts        # TypeScript types (discriminated unions)
 │   │   ├── schemas.ts       # Zod schemas
 │   │   ├── guards.ts        # Type guards
 │   │   └── index.ts         # Exports
 │   └── components/ui/       # shadcn/ui components
-├── tests/                   # Test files
+├── tests/
+│   ├── unit/                # Unit tests (Vitest)
+│   ├── e2e/                 # E2E tests (Puppeteer)
+│   └── setup/               # Setup verification tests
 ├── dist/                    # Build output
 └── docs/                    # Documentation
 ```
@@ -215,10 +228,11 @@ npm run format
 
 All tests pass with TDD methodology:
 
-- **172 tests** covering all components
+- **201 tests** covering all components
+- Unit tests for business logic
+- Integration tests for request processing
 - Type validation tests
 - Service Worker tests
-- UI component tests
 
 ```bash
 npm test
@@ -236,11 +250,24 @@ npm test
 
 ### Service Worker (Background)
 
-- **Messaging**: Handles communication with Popup/Options
-- **webRequest Listeners**: Intercepts network requests
-- **Filtering**: Multi-stage filtering pipeline
-- **Logging**: Ring buffer with deduplication
-- **Export**: Script generation for multiple formats
+The background service worker uses a **class-based architecture** with dependency injection for better testability and separation of concerns:
+
+- **StateManager**: Manages application state with 5-second caching
+- **RequestProcessor**: Coordinates the request processing workflow
+- **RequestFilter**: Encapsulates filtering logic
+- **RequestLogger**: Manages log entries with deduplication and ring buffer
+- **Message Handlers**: Handles communication with Popup/Options pages
+- **Export Module**: Generates scripts in multiple formats
+
+### Class Architecture
+
+```
+RequestProcessor
+    ├── StateManager (injected)
+    ├── RequestFilter (injected)
+    └── RequestLogger (injected)
+        └── StateManager (injected)
+```
 
 ### Data Flow
 
@@ -249,13 +276,18 @@ User Action (Popup)
     ↓
 chrome.runtime.sendMessage
     ↓
-Service Worker (messages.ts)
+Message Handlers (messages.ts)
     ↓
-webRequest Listeners (listeners.ts)
+StateManager (state-manager.ts)
     ↓
-Filtering Pipeline (filtering.ts)
-    ↓
-Log Storage (logging.ts)
+webRequest Event → RequestProcessor
+    ├── Check monitoring state
+    ├── RequestFilter.shouldLog()
+    └── RequestLogger.logRequest()
+        ├── Create log entry
+        ├── Check for duplicates
+        ├── Apply ring buffer limit
+        └── Save to storage
     ↓
 Export (export.ts)
     ↓
@@ -291,15 +323,24 @@ This extension requires the following permissions:
 
 ## Roadmap
 
+### Completed ✅
+
 - [x] Service Worker implementation
 - [x] Popup UI
 - [x] Options Page
 - [x] Export functionality (5 formats)
-- [ ] IndexedDB storage for large datasets
-- [ ] i18n support
-- [ ] Unit tests with Vitest
+- [x] Unit tests with Vitest (201 tests)
+- [x] Class-based architecture with dependency injection
+- [x] Type-safe discriminated unions for messages
+- [x] Constants centralization
+- [x] Error handling with custom error classes
+- [x] State management with caching (5s TTL)
+
+### Planned 🚀
+
 - [ ] E2E tests with Puppeteer
 - [ ] Chrome Web Store publishing
+- [ ] Performance optimization for large datasets
 
 ## License
 

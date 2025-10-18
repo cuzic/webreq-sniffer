@@ -1,1 +1,235 @@
-WebreqSniffer 技術スタック (Technology Stack)本ドキュメントは、Chrome拡張機能「WebreqSniffer」の開発に使用する主要なライブラリ、フレームワーク、およびツールを定義します。概要このプロジェクトでは、TypeScriptを主要言語とし、モダンで生産性の高い開発体験を実現するために、Viteを中心としたエコシステムを採用します。UIはReactとTailwind CSSを使用して構築し、ブラウザAPIはasync/awaitで扱えるようにラッパーを導入します。コード品質の自動化、国際化対応、大規模データハンドリングも見据えた堅牢な設計を目指します。主要技術スタック一覧役割ライブラリ / ツール採用理由ビルド環境Vite + CRXJS Vite Plugin高速なHMRによる優れた開発体験、シンプルな設定、TSネイティブ対応。コード品質ESLint + Prettier + huskyコードスタイルを統一し、潜在的なバグを早期発見・自動修正するため。UIフレームワークReactコンポーネントベースでの効率的なUI構築と、豊富なエコシステム。UI/CSSTailwind CSS + shadcn/uiモダンで効率的なUIスタイリングとコンポーネント構築のため。国際化 (i18n)react-i18nextReactコンポーネント内での多言語対応を効率化するため。状態管理Zustandシンプルで強力な状態管理を実現するため。データ検証Zod型安全なデータ検証を容易に実装するため。大規模データDexie.jsIndexedDBを容易に扱い、大量のログデータを扱うため。型定義@types/chromeChrome拡張機能APIのコード補完と型安全性を確保するために必須。ブラウザAPIラッパーwebextension-polyfillasync/await構文でAPIを扱え、コードの可読性が向上し、将来的なクロスブラウザ対応も容易になるため。ユーティリティLodashdebounce等の便利なユーティリティ関数を利用するため。ユニットテストVitestViteとの親和性が非常に高く、設定が容易。ビジネスロジックの品質を担保。E2EテストPuppeteer実際のブラウザ環境で拡張機能の振る舞いを自動テストするため。各技術の詳細1. 開発・ビルド環境Vite (vite)役割: TypeScriptやReactのコードを、ブラウザで実行可能なJavaScript, HTML, CSSに変換（バンドル）するビルドツール。採用理由: 従来のWebpack等に比べて、HMR（ホットモジュールリプレイスメント）による開発サーバーの起動と更新が圧倒的に高速です。CRXJS Vite Plugin (@crxjs/vite-plugin)役割: ViteをChrome拡張機能開発に特化させるためのプラグイン。採用理由: manifest.jsonの自動生成など、拡張機能開発特有の設定を自動化し、開発者がロジック開発に集中できるよう支援します。2. コード品質とフォーマットESLint役割: コード静的解析ツール（リンター）。採用理由: コード中の問題のあるパターン（未使用変数、React Hooksの誤用など）を検出し、コードの品質を維持します。Prettier役割: コードフォーマッター。採用理由: コードのスタイルを保存時に自動で統一します。これにより、開発者はフォーマットを気にする必要がなくなり、レビューも本質的なロジックに集中できます。husky + lint-staged役割: Git連携ツール。採用理由: Gitコミット直前にESLintやPrettierを自動実行し、品質の低いコードがリポジトリに混入するのを防ぎます。3. UIと国際化 (i18n)React (react, react-dom)役割: ポップアップおよびオプション画面のUIを構築します。採用理由: コンポーネントベースの宣言的なUI構築により、複雑なUIでも見通しよく開発できます。Tailwind CSS役割: ユーティリティファーストのCSSフレームワーク。採用理由: HTML内に直接クラ�
+# WebreqSniffer Technology Stack
+
+This document defines the main libraries, frameworks, and tools used in the development of the "WebreqSniffer" Chrome extension.
+
+## Overview
+
+This project uses TypeScript as the primary language and adopts a modern, productivity-focused development ecosystem centered around Vite. The UI is built with React and Tailwind CSS. The architecture emphasizes type safety, testability, and maintainability through class-based design with dependency injection.
+
+## Core Technology Stack
+
+| Role              | Library / Tool            | Reason for Adoption                                                                             |
+| ----------------- | ------------------------- | ----------------------------------------------------------------------------------------------- |
+| Build Environment | Vite + CRXJS Vite Plugin  | Excellent development experience with fast HMR, simple configuration, native TypeScript support |
+| Code Quality      | ESLint + Prettier + Husky | Unify code style and catch potential bugs early with automatic fixes                            |
+| UI Framework      | React 19                  | Efficient UI construction with component-based approach and rich ecosystem                      |
+| UI/CSS            | Tailwind CSS + shadcn/ui  | Modern and efficient UI styling and component construction                                      |
+| State Management  | Custom StateManager       | Simple state management with chrome.storage integration and caching (5s TTL)                    |
+| Data Validation   | Zod                       | Easy implementation of type-safe data validation                                                |
+| Type Definitions  | @types/chrome             | Essential for code completion and type safety for Chrome extension APIs                         |
+| Unit Testing      | Vitest                    | Excellent compatibility with Vite, easy configuration. 201 tests currently passing              |
+| E2E Testing       | Puppeteer                 | Automated testing of extension behavior in actual browser environment                           |
+
+## Technology Details
+
+### 1. Development & Build Environment
+
+#### Vite (vite)
+
+**Role**: Build tool that transforms TypeScript and React code into browser-executable JavaScript, HTML, and CSS.
+
+**Reason for Adoption**: Dramatically faster HMR (Hot Module Replacement) and development server startup/updates compared to traditional tools like Webpack.
+
+#### CRXJS Vite Plugin (@crxjs/vite-plugin)
+
+**Role**: Plugin that specializes Vite for Chrome extension development.
+
+**Reason for Adoption**: Automates extension-specific configurations such as manifest.json generation, allowing developers to focus on logic development.
+
+### 2. Code Quality and Formatting
+
+#### ESLint
+
+**Role**: Code static analysis tool (linter).
+
+**Reason for Adoption**: Detects problematic patterns in code (unused variables, React Hooks misuse, etc.) and maintains code quality.
+
+#### Prettier
+
+**Role**: Code formatter.
+
+**Reason for Adoption**: Automatically unifies code style on save. This eliminates the need for developers to worry about formatting, and reviews can focus on essential logic.
+
+#### husky + lint-staged
+
+**Role**: Git integration tools.
+
+**Reason for Adoption**: Automatically runs ESLint and Prettier just before Git commits, preventing low-quality code from entering the repository.
+
+### 3. UI Framework
+
+#### React (react, react-dom)
+
+**Role**: Builds UI for popup and options pages.
+
+**Reason for Adoption**: Component-based declarative UI construction allows clear development even with complex UIs.
+
+#### Tailwind CSS
+
+**Role**: Utility-first CSS framework.
+
+**Reason for Adoption**: Directly write utility classes in HTML, enabling rapid UI development without switching between HTML and CSS files. Built-in responsive design and dark mode support.
+
+#### shadcn/ui
+
+**Role**: React component collection.
+
+**Reason for Adoption**: Beautiful, accessible components based on Radix UI. Unlike traditional component libraries, code is copied into the project, allowing free customization.
+
+### 4. State Management
+
+#### Custom StateManager
+
+**Role**: Application state management with caching.
+
+**Reason for Adoption**:
+
+- Direct integration with chrome.storage API
+- 5-second cache TTL reduces storage reads
+- Simple, focused implementation without external dependencies
+- Adapter pattern enables easy testing with MockStorageAdapter
+
+**Previous Consideration**: Zustand was initially considered but removed as the custom StateManager is sufficient and better integrated with Chrome extension requirements.
+
+### 5. Data Validation
+
+#### Zod
+
+**Role**: Schema validation library.
+
+**Reason for Adoption**:
+
+- Type-safe runtime validation
+- Automatic TypeScript type inference from schemas
+- Clear error messages
+- Used for validating all settings and log data structures
+
+### 6. Testing
+
+#### Vitest
+
+**Role**: Unit testing framework.
+
+**Reason for Adoption**:
+
+- Excellent compatibility with Vite ecosystem
+- Fast test execution
+- Native TypeScript support
+- Compatible API with Jest
+- Currently running 201 tests with 100% pass rate
+
+#### Puppeteer
+
+**Role**: E2E (End-to-End) testing framework.
+
+**Reason for Adoption**: Controls headless Chrome programmatically to test extension behavior in actual browser environment.
+
+### 7. Browser API
+
+#### @types/chrome
+
+**Role**: Type definitions for Chrome extension APIs.
+
+**Reason for Adoption**: Essential for TypeScript development. Provides code completion, type checking, and documentation for Chrome APIs.
+
+## Architecture Decisions
+
+### Class-Based Design with Dependency Injection
+
+The background service worker uses a class-based architecture with dependency injection:
+
+```
+RequestProcessor
+    ├── StateManager (injected)
+    ├── RequestFilter (injected)
+    └── RequestLogger (injected)
+        └── StateManager (injected)
+```
+
+**Benefits**:
+
+- **Testability**: Easy to mock dependencies in unit tests
+- **Separation of Concerns**: Each class has a single, clear responsibility
+- **Maintainability**: Changes to one component don't ripple through the codebase
+- **Type Safety**: Full TypeScript support with interfaces and generics
+
+### Type-Safe Messages with Discriminated Unions
+
+Messages between popup/options and background use TypeScript discriminated unions:
+
+```typescript
+export type Message =
+  | { type: 'start-monitoring'; payload: { scope: 'activeTab' | 'allTabs'; activeTabId?: number } }
+  | { type: 'stop-monitoring'; payload?: never }
+  | { type: 'get-status'; payload?: never };
+// ...
+```
+
+**Benefits**:
+
+- Compile-time type checking of message payloads
+- Exhaustiveness checking in switch statements
+- No type assertions needed
+- Eliminates entire classes of runtime errors
+
+### Centralized Constants
+
+All magic numbers and strings are centralized in `src/lib/constants.ts`:
+
+```typescript
+export const STORAGE = {
+  CACHE_TTL: 5000,
+  DEFAULT_MAX_ENTRIES: 3000,
+} as const;
+
+export const EXPORT = {
+  DEFAULT_FILENAME_TEMPLATE: 'netlog_{date}_{domain}.{ext}',
+  EXTENSIONS: { ... },
+} as const;
+```
+
+**Benefits**:
+
+- Single source of truth for configuration
+- Easy to adjust values across the entire codebase
+- Type-safe with `as const` assertions
+
+## Dependencies Not Used
+
+The following libraries were considered but are **NOT** used in this project:
+
+### ❌ State Management Libraries (Zustand, Redux, etc.)
+
+**Reason**: Custom StateManager is sufficient and better integrated with chrome.storage API. Additional abstraction is unnecessary.
+
+### ❌ IndexedDB Libraries (Dexie)
+
+**Reason**: chrome.storage.local is sufficient for current requirements. Simplicity is preferred.
+
+### ❌ Internationalization (i18next, react-i18next)
+
+**Reason**: Not required for current scope. Can be added later if needed.
+
+### ❌ Utility Libraries (Lodash)
+
+**Reason**: Native JavaScript/TypeScript features are sufficient. Modern JS provides most utilities that were previously needed from Lodash.
+
+### ❌ Date Libraries (date-fns, dayjs, moment)
+
+**Reason**: Native Date API is sufficient for current use cases. If needed in the future, date-fns would be preferred over moment (which is now in maintenance mode).
+
+### ❌ Logging Libraries (winston, pino, etc.)
+
+**Reason**: Chrome DevTools is sufficient for development. Native console.log/error works well for this use case without the overhead.
+
+## Summary
+
+The current dependency set is **lean and appropriate**. The architecture is:
+
+- ✅ **Type-safe** with TypeScript and Zod validation
+- ✅ **Well-tested** with 201 Vitest unit tests
+- ✅ **Maintainable** with class-based design and dependency injection
+- ✅ **Modern** with React 19, Vite, and Tailwind CSS
+- ✅ **Lightweight** without unnecessary dependencies
+
+This stack provides a solid foundation for building a robust, performant Chrome extension.
