@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PipelineTemplateEditor } from '../components/PipelineTemplateEditor';
 
 interface LimitsTabProps {
   settings: Settings;
@@ -55,27 +56,18 @@ export function LimitsTab({ settings, onSettingsChange }: LimitsTabProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filename Template */}
-          <div className="space-y-2">
-            <Label htmlFor="filename-template">Filename Template</Label>
-            <Input
-              id="filename-template"
-              value={settings.exportSettings.filenameTemplate}
-              onChange={(e) =>
-                onSettingsChange({
-                  ...settings,
-                  exportSettings: {
-                    ...settings.exportSettings,
-                    filenameTemplate: e.target.value,
-                  },
-                })
-              }
-              placeholder="{domain}-{date}.{ext}"
-            />
-            <p className="text-sm text-muted-foreground">
-              Variables: {'{domain}'} (hostname), {'{date}'} (YYYY-MM-DD), {'{ext}'} (file
-              extension)
-            </p>
-          </div>
+          <PipelineTemplateEditor
+            value={settings.exportSettings.filenameTemplate}
+            onChange={(value) =>
+              onSettingsChange({
+                ...settings,
+                exportSettings: {
+                  ...settings.exportSettings,
+                  filenameTemplate: value,
+                },
+              })
+            }
+          />
 
           {/* Newline Style */}
           <div className="space-y-2">

@@ -9,6 +9,7 @@ import { EXPORT } from '@/lib/constants';
 import { renderTemplate } from '@/lib/template';
 import { getBuiltInTemplate } from '@/lib/builtinTemplates';
 import { sanitizeFilename } from '@/lib/filename';
+import { safeEvaluateTemplate, type TemplateContext } from '@/lib/pipeline-template-engine';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -155,7 +156,7 @@ export function generatePowerShell(entries: LogEntry[]): string {
 }
 
 /**
- * Generate filename from template
+ * Generate filename from pipeline template
  */
 export function generateFilename(
   template: string,
@@ -174,7 +175,7 @@ export function generateFilename(
   if (firstEntry) {
     try {
       const url = new URL(firstEntry.url);
-      domain = url.hostname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      domain = url.hostname;
     } catch {
       // Invalid URL, use default
     }
@@ -183,67 +184,36 @@ export function generateFilename(
   // Determine extension
   const ext = EXPORT.EXTENSIONS[format];
 
-  // Replace placeholders
-  let filename = template
-    .replace(/{date}/g, date)
-    .replace(/{time}/g, time)
-    .replace(/{timestamp}/g, String(Date.now()))
-    .replace(/{domain}/g, domain)
-    .replace(/{ext}/g, ext);
+  // Build template context
+  const context: TemplateContext = {
+    // System variables
+    date,
+    time,
+    timestamp: Date.now(),
+    domain,
+    ext,
 
-  // Page metadata variables
-  if (metadata) {
-    filename = filename
-      .replace(/{pageTitle}/g, metadata.pageTitle || 'untitled')
-      .replace(/{ogTitle}/g, metadata.ogTitle || metadata.pageTitle || 'untitled')
-      .replace(
-        /{videoTitle}/g,
-        metadata.videoTitle || metadata.ogTitle || metadata.pageTitle || 'untitled'
-      )
-      .replace(/{metaTitle}/g, metadata.metaTitle || metadata.pageTitle || 'untitled');
+    // Page metadata (with fallbacks)
+    pageTitle: metadata?.pageTitle,
+    ogTitle: metadata?.ogTitle || metadata?.pageTitle,
+    videoTitle: metadata?.videoTitle || metadata?.ogTitle || metadata?.pageTitle,
+    metaTitle: metadata?.metaTitle || metadata?.pageTitle,
+    metaDescription: metadata?.metaDescription,
 
-    // Manifest metadata variables
-    if (metadata.manifestMetadata) {
-      const manifest = metadata.manifestMetadata;
-      filename = filename
-        .replace(/{manifestTitle}/g, manifest.title || 'untitled')
-        .replace(/{manifestType}/g, manifest.type)
-        .replace(/{segmentPattern}/g, manifest.segmentPattern || 'unknown');
+    // Manifest metadata
+    manifestTitle: metadata?.manifestMetadata?.title,
+    manifestType: metadata?.manifestMetadata?.type,
+    segmentPattern: metadata?.manifestMetadata?.segmentPattern,
+    programDate: metadata?.manifestMetadata?.programDateTime
+      ? new Date(metadata.manifestMetadata.programDateTime).toISOString().slice(0, 10)
+      : undefined,
+  };
 
-      if (manifest.programDateTime) {
-        // Extract date from ISO 8601 format
-        try {
-          const dateObj = new Date(manifest.programDateTime);
-          const manifestDate = dateObj.toISOString().slice(0, 10);
-          filename = filename.replace(/{programDate}/g, manifestDate);
-        } catch {
-          filename = filename.replace(/{programDate}/g, 'unknown');
-        }
-      } else {
-        filename = filename.replace(/{programDate}/g, 'unknown');
-      }
-    } else {
-      // Fallback if no manifest metadata
-      filename = filename
-        .replace(/{manifestTitle}/g, 'unknown')
-        .replace(/{manifestType}/g, 'unknown')
-        .replace(/{segmentPattern}/g, 'unknown')
-        .replace(/{programDate}/g, 'unknown');
-    }
-  } else {
-    // Fallback if no metadata
-    filename = filename
-      .replace(/{pageTitle}/g, 'untitled')
-      .replace(/{ogTitle}/g, 'untitled')
-      .replace(/{videoTitle}/g, 'untitled')
-      .replace(/{metaTitle}/g, 'untitled')
-      .replace(/{manifestTitle}/g, 'unknown')
-      .replace(/{manifestType}/g, 'unknown')
-      .replace(/{segmentPattern}/g, 'unknown')
-      .replace(/{programDate}/g, 'unknown');
-  }
+  // Evaluate template with pipeline engine
+  // Use 'untitled' as fallback if template evaluation fails
+  const filename = safeEvaluateTemplate(template, context, `${domain}_${date}.${ext}`);
 
-  // Sanitize filename
+  // Sanitize filename (removes invalid filesystem characters)
   return sanitizeFilename(filename);
 }
 
