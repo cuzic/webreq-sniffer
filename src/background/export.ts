@@ -187,30 +187,15 @@ export function generateFilename(
 
 /**
  * Generate export content based on format
+ * All formats now use the template system
  */
 export function generateExportContent(entries: LogEntry[], format: ExportFormat): string {
-  switch (format) {
-    case 'url-list':
-      return generateUrlList(entries);
-    case 'bash-curl':
-      return generateBashCurl(entries);
-    case 'bash-curl-headers':
-      return generateBashCurlHeaders(entries);
-    case 'bash-yt-dlp':
-      return generateBashYtDlp(entries);
-    case 'powershell':
-      return generatePowerShell(entries);
-    case 'json': {
-      // Use template-based export for JSON
-      const template = getBuiltInTemplate('json');
-      if (!template) {
-        throw new ExportError('JSON template not found');
-      }
-      return renderTemplate(template.template, entries);
-    }
-    default:
-      throw new ExportError(`Unknown export format: ${format}`, { format });
+  // All formats now use templates
+  const template = getBuiltInTemplate(format);
+  if (!template) {
+    throw new ExportError(`Template not found for format: ${format}`, { format });
   }
+  return renderTemplate(template.template, entries);
 }
 
 /**

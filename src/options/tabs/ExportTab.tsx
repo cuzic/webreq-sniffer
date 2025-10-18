@@ -8,10 +8,13 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { TemplateSelector } from '../components/TemplateSelector';
 import { TemplatePreview } from '../components/TemplatePreview';
+import { TemplateEditorDialog } from '../components/TemplateEditorDialog';
 import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 
 interface ExportTabProps {
   settings: Settings;
@@ -28,6 +31,8 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
   );
   const [previewEntries, setPreviewEntries] = useState<LogEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | undefined>(undefined);
 
   // Load entries for preview
   useEffect(() => {
@@ -64,15 +69,88 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
     });
   }
 
+  function handleCreateTemplate() {
+    setEditingTemplate(undefined);
+    setEditorOpen(true);
+  }
+
+  function handleEditTemplate() {
+    if (currentTemplate && !currentTemplate.isBuiltIn) {
+      setEditingTemplate(currentTemplate);
+      setEditorOpen(true);
+    }
+  }
+
+  function handleDeleteTemplate() {
+    if (currentTemplate && !currentTemplate.isBuiltIn) {
+      if (confirm(`テンプレート「${currentTemplate.name}」を削除しますか？`)) {
+        const newCustomTemplates = settings.exportSettings.customTemplates.filter(
+          (t) => t.id !== currentTemplate.id
+        );
+
+        // If deleting the currently selected template, switch to default
+        const newDefaultId =
+          selectedTemplateId === currentTemplate.id ? 'url-list' : selectedTemplateId;
+
+        onSettingsChange({
+          ...settings,
+          exportSettings: {
+            ...settings.exportSettings,
+            customTemplates: newCustomTemplates,
+            defaultTemplateId: newDefaultId,
+          },
+        });
+
+        setSelectedTemplateId(newDefaultId);
+      }
+    }
+  }
+
+  function handleSaveTemplate(template: ExportTemplate) {
+    const existingIndex = settings.exportSettings.customTemplates.findIndex(
+      (t) => t.id === template.id
+    );
+
+    let newCustomTemplates: ExportTemplate[];
+    if (existingIndex >= 0) {
+      // Update existing template
+      newCustomTemplates = [...settings.exportSettings.customTemplates];
+      newCustomTemplates[existingIndex] = template;
+    } else {
+      // Add new template
+      newCustomTemplates = [...settings.exportSettings.customTemplates, template];
+    }
+
+    onSettingsChange({
+      ...settings,
+      exportSettings: {
+        ...settings.exportSettings,
+        customTemplates: newCustomTemplates,
+        defaultTemplateId: template.id,
+      },
+    });
+
+    // Select the newly created/edited template
+    setSelectedTemplateId(template.id);
+  }
+
   return (
     <div className="space-y-6">
       {/* Template Selector */}
       <Card>
         <CardHeader>
-          <CardTitle>Export Template</CardTitle>
-          <CardDescription>
-            テンプレートを使ってエクスポート形式をカスタマイズできます
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Export Template</CardTitle>
+              <CardDescription>
+                テンプレートを使ってエクスポート形式をカスタマイズできます
+              </CardDescription>
+            </div>
+            <Button onClick={handleCreateTemplate} size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              新規作成
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <TemplateSelector
@@ -87,19 +165,40 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
       {currentTemplate && (
         <Card>
           <CardHeader>
-            <CardTitle>Template Source</CardTitle>
-            <CardDescription>
-              {currentTemplate.isBuiltIn
-                ? 'ビルトインテンプレート（読み取り専用）'
-                : 'カスタムテンプレート'}
-            </CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>Template Source</CardTitle>
+                <CardDescription>
+                  {currentTemplate.isBuiltIn
+                    ? 'ビルトインテンプレート（読み取り専用）'
+                    : 'カスタムテンプレート'}
+                </CardDescription>
+              </div>
+              {!currentTemplate.isBuiltIn && (
+                <div className="flex gap-2">
+                  <Button onClick={handleEditTemplate} size="sm" variant="outline">
+                    <Edit className="mr-2 h-4 w-4" />
+                    編集
+                  </Button>
+                  <Button
+                    onClick={handleDeleteTemplate}
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    削除
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               <Label>Handlebars Template</Label>
               <Textarea
                 value={currentTemplate.template}
-                readOnly={currentTemplate.isBuiltIn}
+                readOnly
                 rows={12}
                 className="font-mono text-xs"
                 placeholder="{{#each entries}}&#10;{{{url}}}&#10;{{/each}}"
@@ -172,6 +271,14 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Template Editor Dialog */}
+      <TemplateEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        template={editingTemplate}
+        onSave={handleSaveTemplate}
+      />
     </div>
   );
 }
