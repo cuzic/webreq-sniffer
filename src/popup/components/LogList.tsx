@@ -6,6 +6,7 @@
 import type { LogEntry } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { LogEntryActions } from './LogEntryActions';
 
 interface LogListProps {
   entries: LogEntry[];
@@ -13,9 +14,23 @@ interface LogListProps {
   onToggle: (id: string) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
+  onCopyUrl: (entry: LogEntry) => void;
+  onOpenInTab: (entry: LogEntry) => void;
+  onExport: (entry: LogEntry) => void;
+  onShowDetails: (entry: LogEntry) => void;
 }
 
-export function LogList({ entries, selectedIds, onToggle, onSelectAll, onClearAll }: LogListProps) {
+export function LogList({
+  entries,
+  selectedIds,
+  onToggle,
+  onSelectAll,
+  onClearAll,
+  onCopyUrl,
+  onOpenInTab,
+  onExport,
+  onShowDetails,
+}: LogListProps) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -64,6 +79,10 @@ export function LogList({ entries, selectedIds, onToggle, onSelectAll, onClearAl
               entry={entry}
               selected={selectedIds.has(entry.id)}
               onToggle={() => onToggle(entry.id)}
+              onCopyUrl={onCopyUrl}
+              onOpenInTab={onOpenInTab}
+              onExport={onExport}
+              onShowDetails={onShowDetails}
             />
           ))}
         </div>
@@ -76,9 +95,21 @@ interface LogEntryItemProps {
   entry: LogEntry;
   selected: boolean;
   onToggle: () => void;
+  onCopyUrl: (entry: LogEntry) => void;
+  onOpenInTab: (entry: LogEntry) => void;
+  onExport: (entry: LogEntry) => void;
+  onShowDetails: (entry: LogEntry) => void;
 }
 
-function LogEntryItem({ entry, selected, onToggle }: LogEntryItemProps) {
+function LogEntryItem({
+  entry,
+  selected,
+  onToggle,
+  onCopyUrl,
+  onOpenInTab,
+  onExport,
+  onShowDetails,
+}: LogEntryItemProps) {
   // Extract domain from URL
   let domain = '';
   let path = entry.url;
@@ -124,6 +155,15 @@ function LogEntryItem({ entry, selected, onToggle }: LogEntryItemProps) {
             </span>
           </div>
         </div>
+
+        {/* Action buttons */}
+        <LogEntryActions
+          entry={entry}
+          onCopyUrl={onCopyUrl}
+          onOpenInTab={onOpenInTab}
+          onExport={onExport}
+          onShowDetails={onShowDetails}
+        />
       </div>
     </div>
   );

@@ -21,6 +21,9 @@ import { LogActions } from './components/LogActions';
 import { SearchBar } from './components/SearchBar';
 import { FilterDropdown } from './components/FilterDropdown';
 import { LogList } from './components/LogList';
+import { DetailsDialog } from './components/DetailsDialog';
+import { Toaster } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface Status {
   isMonitoring: boolean;
@@ -40,6 +43,8 @@ export function Popup() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [detailsEntry, setDetailsEntry] = useState<LogEntry | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
   // Load status on mount and set up refresh interval
   useEffect(() => {
@@ -165,6 +170,45 @@ export function Popup() {
     setSelectedIds(new Set());
   }
 
+  // Quick action handlers
+  async function handleCopyUrl(entry: LogEntry) {
+    try {
+      await navigator.clipboard.writeText(entry.url);
+      toast.success('URLをコピーしました');
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      toast.error('URLのコピーに失敗しました');
+    }
+  }
+
+  function handleOpenInTab(entry: LogEntry) {
+    try {
+      chrome.tabs.create({ url: entry.url });
+      toast.success('新しいタブで開きました');
+    } catch (error) {
+      console.error('Failed to open URL:', error);
+      toast.error('URLを開けませんでした');
+    }
+  }
+
+  async function handleExportSingle(entry: LogEntry) {
+    setLoading(true);
+    try {
+      const filename = await exportLogs('json', [entry.id]);
+      toast.success(`${filename} をエクスポートしました`);
+    } catch (error) {
+      console.error('Failed to export entry:', error);
+      toast.error('エクスポートに失敗しました');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleShowDetails(entry: LogEntry) {
+    setDetailsEntry(entry);
+    setShowDetailsDialog(true);
+  }
+
   return (
     <div className="w-[400px] p-4 space-y-4">
       {/* Header */}
@@ -231,6 +275,10 @@ export function Popup() {
               onToggle={handleToggle}
               onSelectAll={handleSelectAll}
               onClearAll={handleClearAll}
+              onCopyUrl={handleCopyUrl}
+              onOpenInTab={handleOpenInTab}
+              onExport={handleExportSingle}
+              onShowDetails={handleShowDetails}
             />
           </CardContent>
         </Card>
@@ -251,6 +299,16 @@ export function Popup() {
           />
         </CardContent>
       </Card>
+
+      {/* Details Dialog */}
+      <DetailsDialog
+        entry={detailsEntry}
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+      />
+
+      {/* Toast Notifications */}
+      <Toaster />
     </div>
   );
 }
