@@ -80,6 +80,19 @@ export const STORAGE = {
 export const EXPORT = {
   /** Default filename template for exports */
   DEFAULT_FILENAME_TEMPLATE: 'netlog_{date}_{domain}.{ext}',
+  /** Default domain name when URL parsing fails */
+  DEFAULT_DOMAIN: 'unknown',
+  /** File extensions for each export format */
+  EXTENSIONS: {
+    'url-list': 'txt',
+    'bash-curl': 'sh',
+    'bash-curl-headers': 'sh',
+    'bash-yt-dlp': 'sh',
+    'bash-batch-download': 'sh',
+    powershell: 'ps1',
+    'powershell-batch-download': 'ps1',
+    json: 'json',
+  } as const,
 } as const;
 
 // ============================================================================
@@ -114,7 +127,9 @@ export function isExportFormat(value: string): boolean {
     'bash-curl',
     'bash-curl-headers',
     'bash-yt-dlp',
+    'bash-batch-download',
     'powershell',
+    'powershell-batch-download',
     'json',
   ];
   return validFormats.includes(value);

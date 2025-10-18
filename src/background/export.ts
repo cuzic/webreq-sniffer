@@ -10,6 +10,10 @@ import { renderTemplate } from '@/lib/template';
 import { getBuiltInTemplate } from '@/lib/builtinTemplates';
 import { sanitizeFilename } from '@/lib/filename';
 import { safeEvaluateTemplate, type TemplateContext } from '@/lib/pipeline-template-engine';
+import {
+  generateBashBatchDownload,
+  generatePowerShellBatchDownload,
+} from '@/lib/batch-download-generator';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -219,10 +223,25 @@ export function generateFilename(
 
 /**
  * Generate export content based on format
- * All formats now use the template system
+ * Batch download formats use specialized generators, others use templates
  */
 export function generateExportContent(entries: LogEntry[], format: ExportFormat): string {
-  // All formats now use templates
+  // Handle batch download formats specially
+  if (format === 'bash-batch-download') {
+    if (entries.length === 0) {
+      throw new ExportError('No entries to export', { format });
+    }
+    return generateBashBatchDownload(entries[0]);
+  }
+
+  if (format === 'powershell-batch-download') {
+    if (entries.length === 0) {
+      throw new ExportError('No entries to export', { format });
+    }
+    return generatePowerShellBatchDownload(entries[0]);
+  }
+
+  // All other formats use templates
   const template = getBuiltInTemplate(format);
   if (!template) {
     throw new ExportError(`Template not found for format: ${format}`, { format });

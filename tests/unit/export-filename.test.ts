@@ -304,7 +304,7 @@ describe('generateFilename with Pipeline Templates', () => {
     it('should handle empty entries array', () => {
       const filename = generateFilename('{domain}_{date}.{ext}', 'bash-curl', []);
 
-      expect(filename).toMatch(/^logs_\d{4}-\d{2}-\d{2}\.sh$/);
+      expect(filename).toMatch(/^unknown_\d{4}-\d{2}-\d{2}\.sh$/);
     });
 
     it('should handle entry without URL', () => {
@@ -315,7 +315,7 @@ describe('generateFilename with Pipeline Templates', () => {
 
       const filename = generateFilename('{domain}.{ext}', 'bash-curl', [entry]);
 
-      expect(filename).toBe('logs.sh');
+      expect(filename).toBe('unknown.sh');
     });
   });
 
