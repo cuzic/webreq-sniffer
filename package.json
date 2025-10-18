@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js",
+    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js && node tests/setup/verify-shadcn.test.js",
     "test:package": "node tests/setup/verify-package-json.test.js",
     "test:vite": "node tests/setup/verify-vite-config.test.js",
     "test:typescript": "node tests/setup/verify-typescript-config.test.js",
@@ -33,6 +33,7 @@
     "test:husky": "node tests/setup/verify-husky-lint-staged.test.js",
     "test:react": "node tests/setup/verify-react.test.js",
     "test:tailwind": "node tests/setup/verify-tailwind.test.js",
+    "test:shadcn": "node tests/setup/verify-shadcn.test.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare": "husky"
@@ -71,7 +72,11 @@
     ]
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.546.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.3.1"
   }
 }

@@ -23,7 +23,11 @@
     "noImplicitOverride": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "types": ["chrome", "vite/client"]
+    "types": ["chrome", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*", "manifest.json"],
   "exclude": ["node_modules", "dist", "tests"]
