@@ -118,4 +118,14 @@ test('should have logging logic module', () => {
   expect(existsSync(loggingPath)).toBeTruthy();
 });
 
+// Phase 3 Tests: Export functionality
+test('should have export module', () => {
+  const exportPath = join(projectRoot, 'src/background/export.ts');
+  expect(existsSync(exportPath)).toBeTruthy();
+});
+
+test('should handle export-logs message', () => {
+  expect(messagesContent).toContain('export-logs');
+});
+
 console.log('\n✓ All Service Worker verification tests passed!');

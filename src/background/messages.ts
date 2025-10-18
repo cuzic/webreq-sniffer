@@ -3,9 +3,10 @@
  * Handles messages from Popup and Options pages
  */
 
-import type { Message, MessageResponse, Settings } from '@/types';
+import type { Message, MessageResponse, Settings, ExportFormat } from '@/types';
 import { getLogData, getSettings, updateLogData, updateSettings } from './storage';
 import { updateBadge } from './badge';
+import { exportLogs } from './export';
 
 /**
  * Start monitoring network requests
@@ -118,6 +119,17 @@ export function handleMessage(
           const newSettings = message.payload as Partial<Settings>;
           await updateSettings(newSettings);
           sendResponse({ success: true });
+          break;
+        }
+
+        case 'export-logs': {
+          const { format } = message.payload as { format: ExportFormat };
+          const logData = await getLogData();
+          const settings = await getSettings();
+
+          const filename = await exportLogs(logData.entries, format, settings.exportSettings);
+
+          sendResponse({ success: true, data: { filename } });
           break;
         }
 
