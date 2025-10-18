@@ -5,8 +5,9 @@
 
 import { initializeStorage } from './storage';
 import { handleMessage } from './messages';
+import { registerWebRequestListeners } from './listeners';
 
-// Import types for type checking (used by messages.ts)
+// Import types for type checking
 import '@/types';
 
 console.log('WebreqSniffer Service Worker loaded');
@@ -40,4 +41,13 @@ chrome.runtime.onInstalled.addListener(async (details: chrome.runtime.InstalledD
  */
 chrome.runtime.onMessage.addListener(handleMessage);
 
-console.log('Service Worker message handlers registered');
+// ========================================
+// webRequest Listeners
+// ========================================
+
+/**
+ * Register webRequest listeners for network monitoring
+ */
+registerWebRequestListeners();
+
+console.log('Service Worker initialized: all handlers registered');
