@@ -120,10 +120,24 @@ export type MessageType =
   | 'get-settings'
   | 'update-settings';
 
-export interface Message<T = unknown> {
-  type: MessageType;
-  payload?: T;
-}
+/**
+ * Type-safe discriminated union for messages
+ * Each message type has its own payload type
+ */
+export type Message =
+  | {
+      type: 'start-monitoring';
+      payload: {
+        scope: 'activeTab' | 'allTabs';
+        activeTabId?: number;
+      };
+    }
+  | { type: 'stop-monitoring'; payload?: never }
+  | { type: 'get-status'; payload?: never }
+  | { type: 'clear-logs'; payload?: never }
+  | { type: 'get-settings'; payload?: never }
+  | { type: 'update-settings'; payload: Partial<Settings> }
+  | { type: 'export-logs'; payload: { format: ExportFormat } };
 
 export interface MessageResponse<T = unknown> {
   success: boolean;

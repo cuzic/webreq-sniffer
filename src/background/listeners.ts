@@ -7,7 +7,7 @@ import { getStateManager } from './storage';
 import { RequestFilter } from './request-filter';
 import { RequestLogger } from './request-logger';
 import { RequestProcessor } from './request-processor';
-import type { Settings } from '@/types';
+import { defaultSettings } from '@/types';
 
 // Global processor instance
 let processor: RequestProcessor | null = null;
@@ -19,7 +19,7 @@ function initializeProcessor(): void {
   if (processor) return;
 
   const stateManager = getStateManager();
-  const filter = new RequestFilter({} as Settings); // Will be updated on first use
+  const filter = new RequestFilter(defaultSettings); // Use default settings initially
   const logger = new RequestLogger(stateManager);
   processor = new RequestProcessor(stateManager, filter, logger);
 
@@ -33,7 +33,9 @@ function initializeProcessor(): void {
  * Handle request before it's sent
  * This is where we capture and filter requests
  */
-export function handleBeforeRequest(details: any): undefined {
+export function handleBeforeRequest(
+  details: chrome.webRequest.WebRequestDetails
+): chrome.webRequest.BlockingResponse | undefined {
   // Ensure processor is initialized
   initializeProcessor();
 
@@ -49,7 +51,9 @@ export function handleBeforeRequest(details: any): undefined {
  * Handle request headers before they're sent
  * This is where we can capture headers if needed
  */
-export function handleBeforeSendHeaders(details: any): undefined {
+export function handleBeforeSendHeaders(
+  details: chrome.webRequest.WebRequestDetails
+): chrome.webRequest.BlockingResponse | undefined {
   // Check if monitoring is enabled - async check removed to match signature
   // Headers will be added to the existing entry
   // For now, we create entries in onBeforeRequest
@@ -64,10 +68,16 @@ export function handleBeforeSendHeaders(details: any): undefined {
  * Register all webRequest listeners
  */
 export function registerWebRequestListeners(): void {
-  chrome.webRequest.onBeforeRequest.addListener(handleBeforeRequest, { urls: ['<all_urls>'] });
+  // Note: Chrome's type definitions for webRequest are imprecise
+  // We use type assertions here to bridge the gap between Chrome's actual API
+  // and the @types/chrome definitions
+  chrome.webRequest.onBeforeRequest.addListener(
+    (details) => handleBeforeRequest(details as chrome.webRequest.WebRequestDetails),
+    { urls: ['<all_urls>'] }
+  );
 
   chrome.webRequest.onBeforeSendHeaders.addListener(
-    handleBeforeSendHeaders,
+    (details) => handleBeforeSendHeaders(details as chrome.webRequest.WebRequestDetails),
     { urls: ['<all_urls>'] },
     ['requestHeaders', 'extraHeaders']
   );

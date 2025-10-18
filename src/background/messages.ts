@@ -3,7 +3,7 @@
  * Handles messages from Popup and Options pages
  */
 
-import type { Message, MessageResponse, Settings, ExportFormat } from '@/types';
+import type { Message, MessageResponse } from '@/types';
 import { getLogData, getSettings, updateLogData, updateSettings } from './storage';
 import { updateBadge } from './badge';
 import { exportLogs } from './export';
@@ -69,6 +69,7 @@ export async function clearLogs(): Promise<void> {
 
 /**
  * Handle runtime messages
+ * Type-safe message handling with discriminated unions
  */
 export function handleMessage(
   message: Message,
@@ -82,10 +83,8 @@ export function handleMessage(
     try {
       switch (message.type) {
         case 'start-monitoring': {
-          const { scope, activeTabId } = message.payload as {
-            scope: 'activeTab' | 'allTabs';
-            activeTabId?: number;
-          };
+          // TypeScript now knows payload is { scope, activeTabId? }
+          const { scope, activeTabId } = message.payload;
           await startMonitoring(scope, activeTabId);
           sendResponse({ success: true });
           break;
@@ -116,14 +115,16 @@ export function handleMessage(
         }
 
         case 'update-settings': {
-          const newSettings = message.payload as Partial<Settings>;
+          // TypeScript now knows payload is Partial<Settings>
+          const newSettings = message.payload;
           await updateSettings(newSettings);
           sendResponse({ success: true });
           break;
         }
 
         case 'export-logs': {
-          const { format } = message.payload as { format: ExportFormat };
+          // TypeScript now knows payload is { format: ExportFormat }
+          const { format } = message.payload;
           const logData = await getLogData();
           const settings = await getSettings();
 
@@ -133,11 +134,14 @@ export function handleMessage(
           break;
         }
 
-        default:
+        default: {
+          // Exhaustiveness check - TypeScript will error if we miss a case
+          const _exhaustive: never = message;
           sendResponse({
             success: false,
-            error: `Unknown message type: ${message.type}`,
+            error: `Unknown message type: ${(_exhaustive as Message).type}`,
           });
+        }
       }
     } catch (error) {
       console.error('Error handling message:', error);
