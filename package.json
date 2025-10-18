@@ -1,0 +1,32 @@
+{
+  "name": "webreq-sniffer",
+  "version": "0.1.0",
+  "description": "Chrome extension to monitor network requests and generate download scripts",
+  "type": "module",
+  "author": "cuzic",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cuzic/webreq-sniffer.git"
+  },
+  "keywords": [
+    "chrome-extension",
+    "network-monitoring",
+    "webrequest",
+    "hls",
+    "dash",
+    "m3u8",
+    "download-helper"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "node tests/setup/verify-package-json.test.js",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  }
+}
