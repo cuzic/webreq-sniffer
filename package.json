@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js && node tests/setup/verify-shadcn.test.js && node tests/setup/verify-dependencies.test.js",
+    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js && node tests/setup/verify-shadcn.test.js && node tests/setup/verify-dependencies.test.js && node tests/setup/verify-manifest.test.js",
     "test:package": "node tests/setup/verify-package-json.test.js",
     "test:vite": "node tests/setup/verify-vite-config.test.js",
     "test:typescript": "node tests/setup/verify-typescript-config.test.js",
@@ -35,6 +35,7 @@
     "test:tailwind": "node tests/setup/verify-tailwind.test.js",
     "test:shadcn": "node tests/setup/verify-shadcn.test.js",
     "test:deps": "node tests/setup/verify-dependencies.test.js",
+    "test:manifest": "node tests/setup/verify-manifest.test.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare": "husky"
