@@ -14,26 +14,10 @@ import {
   openOptionsPage,
 } from './messaging';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Play, Square, Download, Trash2, Settings } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Settings } from 'lucide-react';
+import { MonitoringControl } from './components/MonitoringControl';
+import { LogActions } from './components/LogActions';
 
 interface Status {
   isMonitoring: boolean;
@@ -107,17 +91,12 @@ export function Popup() {
   }
 
   async function handleExport(format: ExportFormat) {
-    if (status.entryCount === 0) {
-      alert('No logs to export');
-      return;
-    }
-
     setLoading(true);
     try {
-      const result = await exportLogs(format);
-      console.log('Exported:', result.filename);
+      const filename = await exportLogs(format);
+      alert(`Exported to ${filename}`);
     } catch (error) {
-      console.error('Failed to export:', error);
+      console.error('Failed to export logs:', error);
       alert(`Failed to export logs: ${error}`);
     } finally {
       setLoading(false);
@@ -137,139 +116,58 @@ export function Popup() {
     }
   }
 
-  const exportFormats: Array<{ label: string; value: ExportFormat }> = [
-    { label: 'URL List (.txt)', value: 'url-list' },
-    { label: 'Bash (curl)', value: 'bash-curl' },
-    { label: 'Bash (curl + Headers)', value: 'bash-curl-headers' },
-    { label: 'Bash (yt-dlp)', value: 'bash-yt-dlp' },
-    { label: 'PowerShell (.ps1)', value: 'powershell' },
-  ];
-
   return (
-    <div className="min-w-[400px] min-h-[500px] p-6 bg-gray-50">
+    <div className="w-[400px] p-4 space-y-4">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold text-gray-800">WebreqSniffer</h1>
-          <Button variant="ghost" size="icon" onClick={openOptionsPage} title="設定">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <span
-            className={`inline-block w-3 h-3 rounded-full ${
-              status.isMonitoring ? 'bg-red-500' : 'bg-gray-300'
-            }`}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">WebreqSniffer</h1>
+        <Button variant="ghost" size="sm" onClick={openOptionsPage}>
+          <Settings className="h-5 w-5" />
+        </Button>
+      </div>
+
+      {/* Monitoring Control */}
+      <Card>
+        <CardHeader>
+          <CardTitle>モニタリング</CardTitle>
+          <CardDescription>ネットワークリクエストの監視を開始</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MonitoringControl
+            isMonitoring={status.isMonitoring}
+            monitoringScope={status.monitoringScope}
+            loading={loading}
+            onStartStop={handleStartStop}
+            onScopeChange={handleScopeChange}
           />
-          <span className="text-sm font-medium text-gray-700">
-            {status.isMonitoring ? '● 監視中' : '◯ 停止中'}
-          </span>
-          {status.isMonitoring && (
-            <span className="text-xs text-gray-500">
-              ({status.monitoringScope === 'activeTab' ? 'アクティブタブ' : 'すべてのタブ'})
-            </span>
-          )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Monitoring Controls */}
-      <div className="space-y-4 mb-6">
-        <div>
-          <Button
-            onClick={handleStartStop}
-            disabled={loading}
-            className="w-full"
-            variant={status.isMonitoring ? 'destructive' : 'default'}
-          >
-            {status.isMonitoring ? (
-              <>
-                <Square className="mr-2 h-4 w-4" />
-                監視ストップ
-              </>
-            ) : (
-              <>
-                <Play className="mr-2 h-4 w-4" />
-                監視スタート
-              </>
-            )}
-          </Button>
-        </div>
+      {/* Log Statistics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ログ件数</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{status.entryCount.toLocaleString()}</div>
+          <p className="text-sm text-muted-foreground mt-1">キャプチャされたリクエスト</p>
+        </CardContent>
+      </Card>
 
-        <div className="flex items-center justify-between p-4 bg-white rounded-lg border">
-          <Label htmlFor="scope-switch" className="text-sm font-medium">
-            監視範囲
-          </Label>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">
-              {status.monitoringScope === 'activeTab' ? 'アクティブタブのみ' : 'すべてのタブ'}
-            </span>
-            <Switch
-              id="scope-switch"
-              checked={status.monitoringScope === 'allTabs'}
-              onCheckedChange={handleScopeChange}
-              disabled={loading}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Data Operations */}
-      <div className="space-y-3 mb-6">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={status.entryCount === 0 || loading}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              ログをダウンロード
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[360px]">
-            {exportFormats.map((format) => (
-              <DropdownMenuItem key={format.value} onClick={() => handleExport(format.value)}>
-                {format.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full"
-              disabled={status.entryCount === 0 || loading}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              ログをクリア
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>ログをクリアしますか？</AlertDialogTitle>
-              <AlertDialogDescription>
-                この操作は元に戻せません。{status.entryCount}件のログが削除されます。
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>キャンセル</AlertDialogCancel>
-              <AlertDialogAction onClick={handleClear}>クリア</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-
-      {/* Info Area */}
-      <div className="p-4 bg-white rounded-lg border">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">ログ件数</span>
-          <span className="text-lg font-bold text-gray-900">
-            {status.entryCount.toLocaleString()}
-          </span>
-        </div>
-      </div>
+      {/* Log Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>アクション</CardTitle>
+          <CardDescription>ログのエクスポートとクリア</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LogActions
+            entryCount={status.entryCount}
+            onExport={handleExport}
+            onClear={handleClear}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
