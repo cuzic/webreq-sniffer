@@ -54,10 +54,13 @@ export async function clearLogs(): Promise<void> {
 /**
  * Export logs
  */
-export async function exportLogs(format: ExportFormat): Promise<{ filename: string }> {
+export async function exportLogs(
+  format: ExportFormat,
+  selectedIds?: string[]
+): Promise<{ filename: string }> {
   return sendMessage({
     type: 'export-logs',
-    payload: { format },
+    payload: { format, selectedIds },
   });
 }
 

@@ -137,7 +137,7 @@ export type Message =
   | { type: 'clear-logs'; payload?: never }
   | { type: 'get-settings'; payload?: never }
   | { type: 'update-settings'; payload: Partial<Settings> }
-  | { type: 'export-logs'; payload: { format: ExportFormat } };
+  | { type: 'export-logs'; payload: { format: ExportFormat; selectedIds?: string[] } };
 
 export interface MessageResponse<T = unknown> {
   success: boolean;

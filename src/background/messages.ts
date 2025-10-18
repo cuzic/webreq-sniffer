@@ -125,12 +125,17 @@ export function handleMessage(
         }
 
         case 'export-logs': {
-          // TypeScript now knows payload is { format: ExportFormat }
-          const { format } = message.payload;
+          // TypeScript now knows payload is { format: ExportFormat; selectedIds?: string[] }
+          const { format, selectedIds } = message.payload;
           const logData = await getLogData();
           const settings = await getSettings();
 
-          const filename = await exportLogs(logData.entries, format, settings.exportSettings);
+          // Filter entries if selectedIds is provided
+          const entriesToExport = selectedIds
+            ? logData.entries.filter((entry) => selectedIds.includes(entry.id))
+            : logData.entries;
+
+          const filename = await exportLogs(entriesToExport, format, settings.exportSettings);
 
           sendResponse({ success: true, data: { filename } });
           break;

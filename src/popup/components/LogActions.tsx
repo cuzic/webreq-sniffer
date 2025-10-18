@@ -26,12 +26,15 @@ import { Download, Trash2 } from 'lucide-react';
 
 interface LogActionsProps {
   entryCount: number;
+  selectedCount: number;
   onExport: (format: ExportFormat) => void;
   onClear: () => void;
 }
 
-export function LogActions({ entryCount, onExport, onClear }: LogActionsProps) {
+export function LogActions({ entryCount, selectedCount, onExport, onClear }: LogActionsProps) {
   const hasEntries = entryCount > 0;
+  const exportLabel =
+    selectedCount > 0 ? `選択をダウンロード (${selectedCount}件)` : 'ログをダウンロード';
 
   return (
     <div className="space-y-3">
@@ -40,7 +43,7 @@ export function LogActions({ entryCount, onExport, onClear }: LogActionsProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="w-full" disabled={!hasEntries}>
             <Download className="mr-2 h-4 w-4" />
-            ログをダウンロード
+            {exportLabel}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">

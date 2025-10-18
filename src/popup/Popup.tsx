@@ -39,6 +39,7 @@ export function Popup() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Load status on mount and set up refresh interval
   useEffect(() => {
@@ -101,7 +102,9 @@ export function Popup() {
   async function handleExport(format: ExportFormat) {
     setLoading(true);
     try {
-      const filename = await exportLogs(format);
+      // Export selected entries if any are selected, otherwise export all
+      const idsToExport = selectedIds.size > 0 ? Array.from(selectedIds) : undefined;
+      const filename = await exportLogs(format, idsToExport);
       alert(`Exported to ${filename}`);
     } catch (error) {
       console.error('Failed to export logs:', error);
@@ -140,6 +143,27 @@ export function Popup() {
       return true;
     });
   }, [status.entries, searchTerm, filterType]);
+
+  // Selection handlers
+  function handleToggle(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function handleSelectAll() {
+    setSelectedIds(new Set(filteredEntries.map((e) => e.id)));
+  }
+
+  function handleClearAll() {
+    setSelectedIds(new Set());
+  }
 
   return (
     <div className="w-[400px] p-4 space-y-4">
@@ -201,7 +225,13 @@ export function Popup() {
             </div>
 
             {/* Log List */}
-            <LogList entries={filteredEntries} />
+            <LogList
+              entries={filteredEntries}
+              selectedIds={selectedIds}
+              onToggle={handleToggle}
+              onSelectAll={handleSelectAll}
+              onClearAll={handleClearAll}
+            />
           </CardContent>
         </Card>
       )}
@@ -215,6 +245,7 @@ export function Popup() {
         <CardContent>
           <LogActions
             entryCount={status.entryCount}
+            selectedCount={selectedIds.size}
             onExport={handleExport}
             onClear={handleClear}
           />

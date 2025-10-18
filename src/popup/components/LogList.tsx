@@ -5,12 +5,17 @@
 
 import type { LogEntry } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface LogListProps {
   entries: LogEntry[];
+  selectedIds: Set<string>;
+  onToggle: (id: string) => void;
+  onSelectAll: () => void;
+  onClearAll: () => void;
 }
 
-export function LogList({ entries }: LogListProps) {
+export function LogList({ entries, selectedIds, onToggle, onSelectAll, onClearAll }: LogListProps) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -20,22 +25,60 @@ export function LogList({ entries }: LogListProps) {
     );
   }
 
+  const allSelected = entries.length > 0 && entries.every((entry) => selectedIds.has(entry.id));
+
   return (
-    <ScrollArea className="h-[300px] w-full rounded-md border">
-      <div className="p-4 space-y-2">
-        {entries.map((entry) => (
-          <LogEntryItem key={entry.id} entry={entry} />
-        ))}
+    <div className="space-y-3">
+      {/* Selection controls */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="select-all"
+            checked={allSelected}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                onSelectAll();
+              } else {
+                onClearAll();
+              }
+            }}
+          />
+          <label
+            htmlFor="select-all"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          >
+            すべて選択
+          </label>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          選択: {selectedIds.size}/{entries.length}件
+        </div>
       </div>
-    </ScrollArea>
+
+      {/* Log entries */}
+      <ScrollArea className="h-[300px] w-full rounded-md border">
+        <div className="p-4 space-y-2">
+          {entries.map((entry) => (
+            <LogEntryItem
+              key={entry.id}
+              entry={entry}
+              selected={selectedIds.has(entry.id)}
+              onToggle={() => onToggle(entry.id)}
+            />
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   );
 }
 
 interface LogEntryItemProps {
   entry: LogEntry;
+  selected: boolean;
+  onToggle: () => void;
 }
 
-function LogEntryItem({ entry }: LogEntryItemProps) {
+function LogEntryItem({ entry, selected, onToggle }: LogEntryItemProps) {
   // Extract domain from URL
   let domain = '';
   let path = entry.url;
@@ -48,8 +91,19 @@ function LogEntryItem({ entry }: LogEntryItemProps) {
   }
 
   return (
-    <div className="group rounded-lg border p-3 hover:bg-muted/50 transition-colors">
-      <div className="flex items-start justify-between gap-2">
+    <div
+      className={`group rounded-lg border p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
+        selected ? 'bg-muted/50 border-primary' : ''
+      }`}
+      onClick={onToggle}
+    >
+      <div className="flex items-start gap-3">
+        <Checkbox
+          checked={selected}
+          onCheckedChange={onToggle}
+          onClick={(e) => e.stopPropagation()}
+        />
+
         <div className="flex-1 min-w-0">
           {/* Domain */}
           {domain && <div className="text-xs text-muted-foreground font-medium mb-1">{domain}</div>}
