@@ -121,6 +121,17 @@ export interface ExportOptions {
 }
 
 // ========================================
+// Filter Preview
+// ========================================
+
+export interface PreviewResult {
+  total: number;
+  matched: number;
+  matchRate: number;
+  samples: string[];
+}
+
+// ========================================
 // Message Types (for chrome.runtime messaging)
 // ========================================
 

@@ -3,12 +3,17 @@
  * URL and resource type filtering settings
  */
 
-import type { Settings } from '@/types';
+import type { Settings, PreviewResult } from '@/types';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { FilterPreview } from '../components/FilterPreview';
+import { getStatus } from '../messaging';
+import { shouldLogRequest } from '@/background/filtering';
+import { validateRegex } from '@/lib/utils';
 
 const RESOURCE_TYPES = [
   { value: 'main_frame', label: 'Main Frame' },
@@ -51,6 +56,68 @@ interface FiltersTabProps {
 }
 
 export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
+  const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | undefined>();
+  const [regexErrors, setRegexErrors] = useState<Map<number, string>>(new Map());
+
+  // Calculate preview with debouncing
+  useEffect(() => {
+    const calculatePreview = async () => {
+      setPreviewLoading(true);
+      setPreviewError(undefined);
+
+      try {
+        // Get current log entries
+        const status = await getStatus();
+        const entries = status.entries;
+
+        // Filter entries based on current settings
+        const matched = entries.filter((entry) =>
+          shouldLogRequest(entry.url, entry.type, settings)
+        );
+
+        // Get sample URLs (first 5)
+        const samples = matched.slice(0, 5).map((e) => e.url);
+
+        setPreviewResult({
+          total: entries.length,
+          matched: matched.length,
+          matchRate: entries.length > 0 ? (matched.length / entries.length) * 100 : 0,
+          samples,
+        });
+      } catch (error) {
+        console.error('Failed to calculate preview:', error);
+        setPreviewError(error instanceof Error ? error.message : 'プレビューの計算に失敗しました');
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    // Debounce: wait 500ms after last change
+    const timeoutId = setTimeout(calculatePreview, 500);
+    return () => clearTimeout(timeoutId);
+  }, [
+    settings.simpleFilters,
+    settings.regexFilters,
+    settings.resourceTypes,
+    settings.allowList,
+    settings.denyList,
+    settings.hlsMpdMode,
+  ]);
+
+  // Validate regex filters
+  useEffect(() => {
+    const errors = new Map<number, string>();
+    settings.regexFilters.forEach((pattern, index) => {
+      const result = validateRegex(pattern);
+      if (!result.valid && result.error) {
+        errors.set(index, result.error);
+      }
+    });
+    setRegexErrors(errors);
+  }, [settings.regexFilters]);
+
   function applyPreset(preset: keyof typeof PRESETS) {
     const p = PRESETS[preset];
     onSettingsChange({
@@ -97,7 +164,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
             URL patterns to match (e.g., .m3u8, .mpd, /api/). One per line.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <Textarea
             rows={5}
             value={settings.simpleFilters.join('\n')}
@@ -120,7 +187,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
             Advanced regex patterns (e.g., .*\.m3u8.*). One per line.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <Textarea
             rows={5}
             value={settings.regexFilters.join('\n')}
@@ -131,9 +198,26 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
               })
             }
             placeholder=".*\.m3u8.*&#10;/video/\d+"
+            className={regexErrors.size > 0 ? 'border-destructive' : ''}
           />
+          {/* Regex validation errors */}
+          {regexErrors.size > 0 && (
+            <div className="rounded-md bg-destructive/10 p-3 text-sm">
+              <p className="font-medium text-destructive mb-2">正規表現エラー:</p>
+              <ul className="list-disc list-inside space-y-1 text-destructive/90">
+                {Array.from(regexErrors.entries()).map(([index, error]) => (
+                  <li key={index} className="text-xs">
+                    行 {index + 1}: {error}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Filter Preview */}
+      <FilterPreview result={previewResult} loading={previewLoading} error={previewError} />
 
       {/* Resource Types */}
       <Card>
