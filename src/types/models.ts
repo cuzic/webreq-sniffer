@@ -112,12 +112,37 @@ export type ExportFormat =
   | 'bash-curl' // Bash script with curl commands
   | 'bash-curl-headers' // Bash script with curl + headers
   | 'bash-yt-dlp' // Bash script with yt-dlp commands
-  | 'powershell'; // PowerShell script
+  | 'powershell' // PowerShell script
+  | 'json'; // JSON format
 
 export interface ExportOptions {
   format: ExportFormat;
   includeHeaders: boolean;
   filename?: string;
+}
+
+// ========================================
+// Export Templates
+// ========================================
+
+export interface ExportTemplate {
+  id: string;
+  name: string;
+  template: string; // Handlebars template
+  fileExtension: string; // e.g., ".sh", ".txt", ".json"
+  isBuiltIn: boolean;
+  description?: string;
+}
+
+export interface EnrichedLogEntry extends LogEntry {
+  index: number;
+  index1: number;
+  domain: string;
+  path: string;
+  query: string;
+  protocol: string;
+  filename: string;
+  fileExtension: string;
 }
 
 // ========================================

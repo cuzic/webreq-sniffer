@@ -6,6 +6,8 @@
 import type { LogEntry, LogHeaders, ExportFormat, ExportSettings } from '@/types';
 import { ExportError } from '@/lib/errors';
 import { EXPORT } from '@/lib/constants';
+import { renderTemplate } from '@/lib/template';
+import { getBuiltInTemplate } from '@/lib/builtinTemplates';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -198,6 +200,14 @@ export function generateExportContent(entries: LogEntry[], format: ExportFormat)
       return generateBashYtDlp(entries);
     case 'powershell':
       return generatePowerShell(entries);
+    case 'json': {
+      // Use template-based export for JSON
+      const template = getBuiltInTemplate('json');
+      if (!template) {
+        throw new ExportError('JSON template not found');
+      }
+      return renderTemplate(template.template, entries);
+    }
     default:
       throw new ExportError(`Unknown export format: ${format}`, { format });
   }

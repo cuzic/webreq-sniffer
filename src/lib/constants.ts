@@ -42,6 +42,7 @@ export const EXPORT = {
     'bash-curl-headers': 'sh',
     'bash-yt-dlp': 'sh',
     powershell: 'ps1',
+    json: 'json',
   },
 } as const;
 
