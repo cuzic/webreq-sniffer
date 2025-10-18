@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '../..');
 const optionsHtmlPath = join(projectRoot, 'src/options/options.html');
-const optionsTsxPath = join(projectRoot, 'src/options/options.tsx');
+const optionsTsxPath = join(projectRoot, 'src/options/index.tsx');
 const optionsComponentPath = join(projectRoot, 'src/options/Options.tsx');
 const messagingPath = join(projectRoot, 'src/options/messaging.ts');
 
@@ -50,7 +50,7 @@ test('src/options/options.html should exist', () => {
 });
 
 // Test 2: Options entry point exists
-test('src/options/options.tsx should exist', () => {
+test('src/options/index.tsx should exist', () => {
   expect(existsSync(optionsTsxPath)).toBeTruthy();
 });
 
@@ -73,18 +73,18 @@ if (existsSync(optionsHtmlPath)) {
   });
 
   test('options.html should load the options script', () => {
-    expect(htmlContent).toContain('options.tsx');
+    expect(htmlContent).toContain('index.tsx');
   });
 }
 
 if (existsSync(optionsTsxPath)) {
   const tsxContent = readFileSync(optionsTsxPath, 'utf-8');
 
-  test('options.tsx should import React', () => {
+  test('options index.tsx should import React', () => {
     expect(tsxContent).toContain('react');
   });
 
-  test('options.tsx should create React root', () => {
+  test('options index.tsx should create React root', () => {
     expect(tsxContent).toContain('createRoot');
   });
 }

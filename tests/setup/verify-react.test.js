@@ -11,8 +11,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '../..');
 const packageJsonPath = join(projectRoot, 'package.json');
-const popupPath = join(projectRoot, 'src/popup/popup.tsx');
-const optionsPath = join(projectRoot, 'src/options/options.tsx');
+const popupPath = join(projectRoot, 'src/popup/index.tsx');
+const optionsPath = join(projectRoot, 'src/options/index.tsx');
 
 // Simple test framework
 function test(description, fn) {
@@ -77,24 +77,24 @@ test('package.json should have @types/react-dom as devDependency', () => {
   expect(packageJson.devDependencies).toHaveProperty('@types/react-dom');
 });
 
-// Test 5: popup.tsx exists
-test('src/popup/popup.tsx should exist', () => {
+// Test 5: popup index.tsx exists
+test('src/popup/index.tsx should exist', () => {
   expect(existsSync(popupPath)).toBeTruthy();
 });
 
-// Test 6: popup.tsx imports React
-test('popup.tsx should import React', () => {
+// Test 6: popup index.tsx imports React
+test('popup index.tsx should import React', () => {
   const content = readFileSync(popupPath, 'utf-8');
   expect(content).toContain('react');
 });
 
-// Test 7: options.tsx exists
-test('src/options/options.tsx should exist', () => {
+// Test 7: options index.tsx exists
+test('src/options/index.tsx should exist', () => {
   expect(existsSync(optionsPath)).toBeTruthy();
 });
 
-// Test 8: options.tsx imports React
-test('options.tsx should import React', () => {
+// Test 8: options index.tsx imports React
+test('options index.tsx should import React', () => {
   const content = readFileSync(optionsPath, 'utf-8');
   expect(content).toContain('react');
 });

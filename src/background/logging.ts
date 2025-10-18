@@ -3,7 +3,7 @@
  * Handles log entry creation and storage
  */
 
-import type { LogEntry, LogData, Settings } from '@/types';
+import type { LogEntry, Settings } from '@/types';
 import { getLogData, setLogData } from './storage';
 
 /**
@@ -98,21 +98,4 @@ export async function addLogEntry(entry: LogEntry, settings: Settings): Promise<
   }
 
   await setLogData(logData);
-}
-
-// Debounce storage writes
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
-/**
- * Save log data with debouncing (250ms)
- */
-export async function saveLogDataDebounced(logData: LogData): Promise<void> {
-  if (saveTimeout) {
-    clearTimeout(saveTimeout);
-  }
-
-  saveTimeout = setTimeout(async () => {
-    await setLogData(logData);
-    saveTimeout = null;
-  }, 250);
 }

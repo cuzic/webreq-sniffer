@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '../..');
 const popupHtmlPath = join(projectRoot, 'src/popup/popup.html');
-const popupTsxPath = join(projectRoot, 'src/popup/popup.tsx');
+const popupTsxPath = join(projectRoot, 'src/popup/index.tsx');
 const popupComponentPath = join(projectRoot, 'src/popup/Popup.tsx');
 const messagingPath = join(projectRoot, 'src/popup/messaging.ts');
 
@@ -50,7 +50,7 @@ test('src/popup/popup.html should exist', () => {
 });
 
 // Test 2: Popup entry point exists
-test('src/popup/popup.tsx should exist', () => {
+test('src/popup/index.tsx should exist', () => {
   expect(existsSync(popupTsxPath)).toBeTruthy();
 });
 
@@ -73,18 +73,18 @@ if (existsSync(popupHtmlPath)) {
   });
 
   test('popup.html should load the popup script', () => {
-    expect(htmlContent).toContain('popup.tsx');
+    expect(htmlContent).toContain('index.tsx');
   });
 }
 
 if (existsSync(popupTsxPath)) {
   const tsxContent = readFileSync(popupTsxPath, 'utf-8');
 
-  test('popup.tsx should import React', () => {
+  test('popup index.tsx should import React', () => {
     expect(tsxContent).toContain('react');
   });
 
-  test('popup.tsx should create React root', () => {
+  test('popup index.tsx should create React root', () => {
     expect(tsxContent).toContain('createRoot');
   });
 }
@@ -101,12 +101,12 @@ if (existsSync(popupComponentPath)) {
 if (existsSync(messagingPath)) {
   const messagingContent = readFileSync(messagingPath, 'utf-8');
 
-  test('messaging.ts should have sendMessage function', () => {
+  test('messaging.ts should import sendMessage', () => {
     expect(messagingContent).toContain('sendMessage');
   });
 
-  test('messaging.ts should use chrome.runtime.sendMessage', () => {
-    expect(messagingContent).toContain('chrome.runtime.sendMessage');
+  test('messaging.ts should import from lib/messaging', () => {
+    expect(messagingContent).toContain('@/lib/messaging');
   });
 }
 

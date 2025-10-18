@@ -14,10 +14,3 @@ export async function updateBadge(isMonitoring: boolean): Promise<void> {
     await chrome.action.setBadgeText({ text: '' });
   }
 }
-
-/**
- * Clear badge
- */
-export async function clearBadge(): Promise<void> {
-  await chrome.action.setBadgeText({ text: '' });
-}

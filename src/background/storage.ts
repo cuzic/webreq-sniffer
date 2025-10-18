@@ -1,10 +1,25 @@
 /**
  * Storage Operations Module
  * Handles chrome.storage.local and chrome.storage.sync operations
+ * Uses dependency injection pattern with storage adapters
  */
 
 import type { LogData, Settings } from '@/types';
 import { defaultLogData, defaultSettings } from '@/types';
+import type { IStorageAdapter } from '@/lib/adapters/storage-adapter';
+import { createChromeLocalAdapter, createChromeSyncAdapter } from '@/lib/adapters/storage-adapter';
+
+// Storage adapters (can be injected for testing)
+let localAdapter: IStorageAdapter = createChromeLocalAdapter();
+let syncAdapter: IStorageAdapter = createChromeSyncAdapter();
+
+/**
+ * Inject custom storage adapters (for testing)
+ */
+export function injectStorageAdapters(local: IStorageAdapter, sync: IStorageAdapter): void {
+  localAdapter = local;
+  syncAdapter = sync;
+}
 
 // ========================================
 // LogData Operations (storage.local)
@@ -14,25 +29,22 @@ import { defaultLogData, defaultSettings } from '@/types';
  * Get log data from storage.local
  */
 export async function getLogData(): Promise<LogData> {
-  const result = await chrome.storage.local.get('logData');
-  return (result.logData as LogData) || defaultLogData;
+  const result = await localAdapter.get<LogData>('logData');
+  return result || defaultLogData;
 }
 
 /**
  * Save log data to storage.local
  */
 export async function setLogData(logData: LogData): Promise<void> {
-  await chrome.storage.local.set({ logData });
+  await localAdapter.set('logData', logData);
 }
 
 /**
  * Update log data partially
  */
 export async function updateLogData(updates: Partial<LogData>): Promise<LogData> {
-  const logData = await getLogData();
-  const updatedLogData = { ...logData, ...updates };
-  await setLogData(updatedLogData);
-  return updatedLogData;
+  return await localAdapter.update<LogData>('logData', updates);
 }
 
 // ========================================
@@ -43,25 +55,22 @@ export async function updateLogData(updates: Partial<LogData>): Promise<LogData>
  * Get settings from storage.sync
  */
 export async function getSettings(): Promise<Settings> {
-  const result = await chrome.storage.sync.get('settings');
-  return (result.settings as Settings) || defaultSettings;
+  const result = await syncAdapter.get<Settings>('settings');
+  return result || defaultSettings;
 }
 
 /**
  * Save settings to storage.sync
  */
 export async function setSettings(settings: Settings): Promise<void> {
-  await chrome.storage.sync.set({ settings });
+  await syncAdapter.set('settings', settings);
 }
 
 /**
  * Update settings partially
  */
 export async function updateSettings(updates: Partial<Settings>): Promise<Settings> {
-  const settings = await getSettings();
-  const updatedSettings = { ...settings, ...updates };
-  await setSettings(updatedSettings);
-  return updatedSettings;
+  return await syncAdapter.update<Settings>('settings', updates);
 }
 
 // ========================================
