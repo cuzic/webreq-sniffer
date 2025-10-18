@@ -527,7 +527,7 @@ async function handleCopyUrl(entry: LogEntry) {
 
 ---
 
-### 5. 型定義の改善
+### 5. 型定義の改善 ✅ **完了**
 
 **現状の問題**:
 
@@ -559,7 +559,7 @@ type Status = {
 **After**:
 
 ```typescript
-// types/state.ts (新規作成)
+// types/models.ts
 export interface MonitoringStatus {
   isMonitoring: boolean;
   monitoringScope: MonitoringScope;
@@ -578,6 +578,23 @@ export type MonitoringScope = 'activeTab' | 'allTabs';
 
 **実装難易度**: ⭐⭐☆☆☆（簡単）
 **所要時間**: 約1時間
+
+**実装完了 (2025-10-18)**:
+
+- ✅ `/src/types/models.ts` に `MonitoringStatus` インターフェース追加
+  - `MonitoringScope` 型を使用（インライン文字列リテラルの代わりに）
+  - UIステート表現に適したインターフェースとして定義
+- ✅ `/src/types/index.ts` に `MonitoringStatus` エクスポート追加
+- ✅ `/src/popup/hooks/useMonitoring.ts` を更新
+  - ローカル定義を削除
+  - `@/types` から `MonitoringStatus` をインポート
+- ✅ ビルド成功確認済み
+
+**効果**:
+
+- 型定義の一元管理により、一貫性が向上
+- `MonitoringScope` 型の正しい使用で type safety 向上
+- 再利用可能な型定義により、将来的な拡張が容易に
 
 ---
 

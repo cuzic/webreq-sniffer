@@ -4,16 +4,9 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { LogEntry } from '@/types';
+import type { MonitoringStatus } from '@/types';
 import { startMonitoring, stopMonitoring, getStatus, clearLogs } from '../messaging';
 import { REFRESH_INTERVALS } from '@/lib/constants';
-
-interface MonitoringStatus {
-  isMonitoring: boolean;
-  monitoringScope: 'activeTab' | 'allTabs';
-  entryCount: number;
-  entries: LogEntry[];
-}
 
 export function useMonitoring() {
   const [status, setStatus] = useState<MonitoringStatus>({

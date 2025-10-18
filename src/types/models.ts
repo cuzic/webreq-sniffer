@@ -143,6 +143,17 @@ export interface LogData {
   entries: LogEntry[]; // Managed as a ring buffer
 }
 
+/**
+ * Monitoring Status (UI State)
+ * Used by the popup to display current monitoring state
+ */
+export interface MonitoringStatus {
+  isMonitoring: boolean;
+  monitoringScope: MonitoringScope;
+  entryCount: number;
+  entries: LogEntry[];
+}
+
 // ========================================
 // Export Formats
 // ========================================

@@ -18,6 +18,7 @@ export type {
   LogEntry,
   MonitoringScope,
   LogData,
+  MonitoringStatus,
   ExportFormat,
   ExportOptions,
   MessageType,
