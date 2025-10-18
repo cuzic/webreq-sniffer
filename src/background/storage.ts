@@ -8,10 +8,14 @@ import type { LogData, Settings } from '@/types';
 import { defaultLogData, defaultSettings } from '@/types';
 import type { IStorageAdapter } from '@/lib/adapters/storage-adapter';
 import { createChromeLocalAdapter, createChromeSyncAdapter } from '@/lib/adapters/storage-adapter';
+import { StateManager } from './state-manager';
 
 // Storage adapters (can be injected for testing)
 let localAdapter: IStorageAdapter = createChromeLocalAdapter();
 let syncAdapter: IStorageAdapter = createChromeSyncAdapter();
+
+// State manager with caching
+let stateManager: StateManager = new StateManager(localAdapter, syncAdapter);
 
 /**
  * Inject custom storage adapters (for testing)
@@ -19,6 +23,15 @@ let syncAdapter: IStorageAdapter = createChromeSyncAdapter();
 export function injectStorageAdapters(local: IStorageAdapter, sync: IStorageAdapter): void {
   localAdapter = local;
   syncAdapter = sync;
+  // Recreate state manager with new adapters
+  stateManager = new StateManager(local, sync);
+}
+
+/**
+ * Get state manager instance (for advanced usage)
+ */
+export function getStateManager(): StateManager {
+  return stateManager;
 }
 
 // ========================================
@@ -26,25 +39,24 @@ export function injectStorageAdapters(local: IStorageAdapter, sync: IStorageAdap
 // ========================================
 
 /**
- * Get log data from storage.local
+ * Get log data from storage.local (with caching)
  */
 export async function getLogData(): Promise<LogData> {
-  const result = await localAdapter.get<LogData>('logData');
-  return result || defaultLogData;
+  return await stateManager.getLogData();
 }
 
 /**
- * Save log data to storage.local
+ * Save log data to storage.local (updates cache)
  */
 export async function setLogData(logData: LogData): Promise<void> {
-  await localAdapter.set('logData', logData);
+  await stateManager.setLogData(logData);
 }
 
 /**
- * Update log data partially
+ * Update log data partially (updates cache)
  */
 export async function updateLogData(updates: Partial<LogData>): Promise<LogData> {
-  return await localAdapter.update<LogData>('logData', updates);
+  return await stateManager.updateLogData(updates);
 }
 
 // ========================================
@@ -52,25 +64,24 @@ export async function updateLogData(updates: Partial<LogData>): Promise<LogData>
 // ========================================
 
 /**
- * Get settings from storage.sync
+ * Get settings from storage.sync (with caching)
  */
 export async function getSettings(): Promise<Settings> {
-  const result = await syncAdapter.get<Settings>('settings');
-  return result || defaultSettings;
+  return await stateManager.getSettings();
 }
 
 /**
- * Save settings to storage.sync
+ * Save settings to storage.sync (updates cache)
  */
 export async function setSettings(settings: Settings): Promise<void> {
-  await syncAdapter.set('settings', settings);
+  await stateManager.setSettings(settings);
 }
 
 /**
- * Update settings partially
+ * Update settings partially (updates cache)
  */
 export async function updateSettings(updates: Partial<Settings>): Promise<Settings> {
-  return await syncAdapter.update<Settings>('settings', updates);
+  return await stateManager.updateSettings(updates);
 }
 
 // ========================================
