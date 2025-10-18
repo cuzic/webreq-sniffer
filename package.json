@@ -25,7 +25,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js && node tests/setup/verify-shadcn.test.js",
+    "test": "node tests/setup/verify-package-json.test.js && node tests/setup/verify-vite-config.test.js && node tests/setup/verify-typescript-config.test.js && node tests/setup/verify-eslint-prettier.test.js && node tests/setup/verify-husky-lint-staged.test.js && node tests/setup/verify-react.test.js && node tests/setup/verify-tailwind.test.js && node tests/setup/verify-shadcn.test.js && node tests/setup/verify-dependencies.test.js",
     "test:package": "node tests/setup/verify-package-json.test.js",
     "test:vite": "node tests/setup/verify-vite-config.test.js",
     "test:typescript": "node tests/setup/verify-typescript-config.test.js",
@@ -34,6 +34,7 @@
     "test:react": "node tests/setup/verify-react.test.js",
     "test:tailwind": "node tests/setup/verify-tailwind.test.js",
     "test:shadcn": "node tests/setup/verify-shadcn.test.js",
+    "test:deps": "node tests/setup/verify-dependencies.test.js",
     "lint": "eslint .",
     "format": "prettier --write .",
     "prepare": "husky"
@@ -42,8 +43,10 @@
     "@crxjs/vite-plugin": "^2.2.0",
     "@tailwindcss/postcss": "^4.1.14",
     "@types/chrome": "^0.1.24",
+    "@types/lodash": "^4.17.20",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/webextension-polyfill": "^0.12.4",
     "@typescript-eslint/eslint-plugin": "^8.46.1",
     "@typescript-eslint/parser": "^8.46.1",
     "@vitejs/plugin-react": "^5.0.4",
@@ -74,9 +77,16 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dexie": "^4.2.1",
+    "i18next": "^25.6.0",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.546.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "tailwind-merge": "^3.3.1"
+    "react-i18next": "^16.1.0",
+    "tailwind-merge": "^3.3.1",
+    "webextension-polyfill": "^0.12.0",
+    "zod": "^4.1.12",
+    "zustand": "^5.0.8"
   }
 }
