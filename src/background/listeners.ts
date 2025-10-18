@@ -3,50 +3,44 @@
  * Handles network request interception and logging
  */
 
-import { getLogData, getSettings } from './storage';
-import { shouldLogRequest } from './filtering';
-import { createLogEntry, addLogEntry } from './logging';
+import { getStateManager } from './storage';
+import { RequestFilter } from './request-filter';
+import { RequestLogger } from './request-logger';
+import { RequestProcessor } from './request-processor';
+import type { Settings } from '@/types';
+
+// Global processor instance
+let processor: RequestProcessor | null = null;
+
+/**
+ * Initialize the request processor
+ */
+function initializeProcessor(): void {
+  if (processor) return;
+
+  const stateManager = getStateManager();
+  const filter = new RequestFilter({} as Settings); // Will be updated on first use
+  const logger = new RequestLogger(stateManager);
+  processor = new RequestProcessor(stateManager, filter, logger);
+
+  // Initialize filter with current settings
+  stateManager.getSettings().then((settings) => {
+    processor?.updateFilter(settings);
+  });
+}
 
 /**
  * Handle request before it's sent
  * This is where we capture and filter requests
  */
 export function handleBeforeRequest(details: any): undefined {
+  // Ensure processor is initialized
+  initializeProcessor();
+
   // Process request asynchronously (don't block the request)
-  (async () => {
-    try {
-      // Check if monitoring is enabled
-      const logData = await getLogData();
-      if (!logData.isMonitoring) {
-        return; // Not monitoring, skip
-      }
-
-      // Check tab scope
-      if (logData.monitoringScope === 'activeTab') {
-        if (details.tabId !== logData.activeTabId) {
-          return; // Not the active tab, skip
-        }
-      }
-
-      // Get settings for filtering
-      const settings = await getSettings();
-
-      // Apply filtering logic
-      if (!shouldLogRequest(details.url, details.type, settings)) {
-        return; // Filtered out
-      }
-
-      // Create log entry
-      const entry = createLogEntry(details);
-
-      // Add to log
-      await addLogEntry(entry, settings);
-
-      console.log('Request logged:', details.url);
-    } catch (error) {
-      console.error('Error handling request:', error);
-    }
-  })();
+  processor!.processRequest(details).catch((error) => {
+    console.error('Error processing request:', error);
+  });
 
   return undefined;
 }

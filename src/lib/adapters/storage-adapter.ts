@@ -51,11 +51,13 @@ export class MockStorageAdapter implements IStorageAdapter {
 
   async get<T>(key: string): Promise<T | null> {
     const value = this.data.get(key);
-    return value !== undefined ? (value as T) : null;
+    // Deep clone to simulate serialization/deserialization
+    return value !== undefined ? (JSON.parse(JSON.stringify(value)) as T) : null;
   }
 
   async set<T>(key: string, value: T): Promise<void> {
-    this.data.set(key, value);
+    // Deep clone to simulate serialization/deserialization
+    this.data.set(key, JSON.parse(JSON.stringify(value)));
   }
 
   async update<T>(key: string, updates: Partial<T>): Promise<T> {
