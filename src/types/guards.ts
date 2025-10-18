@@ -11,6 +11,7 @@ import {
   exportFormatSchema,
   messageTypeSchema,
 } from './schemas';
+import { ValidationError } from '@/lib/errors';
 
 /**
  * Type guard to check if a value is a valid Settings object
@@ -49,36 +50,42 @@ export function isMessageType(value: unknown): value is MessageType {
 
 /**
  * Validates and parses Settings with detailed error information
- * @throws {Error} if validation fails
+ * @throws {ValidationError} if validation fails
  */
 export function validateSettings(value: unknown): Settings {
   const result = settingsSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid Settings: ${JSON.stringify(result.error.issues)}`);
+    throw new ValidationError('Invalid Settings', {
+      issues: result.error.issues,
+    });
   }
   return result.data;
 }
 
 /**
  * Validates and parses LogEntry with detailed error information
- * @throws {Error} if validation fails
+ * @throws {ValidationError} if validation fails
  */
 export function validateLogEntry(value: unknown): LogEntry {
   const result = logEntrySchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid LogEntry: ${JSON.stringify(result.error.issues)}`);
+    throw new ValidationError('Invalid LogEntry', {
+      issues: result.error.issues,
+    });
   }
   return result.data;
 }
 
 /**
  * Validates and parses LogData with detailed error information
- * @throws {Error} if validation fails
+ * @throws {ValidationError} if validation fails
  */
 export function validateLogData(value: unknown): LogData {
   const result = logDataSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid LogData: ${JSON.stringify(result.error.issues)}`);
+    throw new ValidationError('Invalid LogData', {
+      issues: result.error.issues,
+    });
   }
   return result.data;
 }

@@ -4,6 +4,7 @@
  */
 
 import type { LogEntry, LogHeaders, ExportFormat, ExportSettings } from '@/types';
+import { ExportError } from '@/lib/errors';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -204,7 +205,7 @@ export function generateExportContent(entries: LogEntry[], format: ExportFormat)
     case 'powershell':
       return generatePowerShell(entries);
     default:
-      throw new Error(`Unknown export format: ${format}`);
+      throw new ExportError(`Unknown export format: ${format}`, { format });
   }
 }
 
@@ -217,7 +218,7 @@ export async function exportLogs(
   exportSettings: ExportSettings
 ): Promise<string> {
   if (entries.length === 0) {
-    throw new Error('No entries to export');
+    throw new ExportError('No entries to export', { entryCount: 0 });
   }
 
   // Generate content
