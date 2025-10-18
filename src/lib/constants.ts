@@ -71,6 +71,8 @@ export const UI = {
 export const STORAGE = {
   /** Default maximum number of log entries to store */
   DEFAULT_MAX_ENTRIES: 3000,
+  /** Cache TTL in milliseconds (5 seconds) */
+  CACHE_TTL: 5000,
 } as const;
 
 // ============================================================================

@@ -30,7 +30,8 @@ export class StateManager {
    */
   async getSettings(forceRefresh = false): Promise<Settings> {
     if (!forceRefresh && this.settingsCache && this.isSettingsCacheValid()) {
-      return this.settingsCache;
+      // Return a deep clone to prevent external mutations
+      return JSON.parse(JSON.stringify(this.settingsCache)) as Settings;
     }
 
     // Fetch from storage
@@ -38,7 +39,7 @@ export class StateManager {
     this.settingsCache = settings || defaultSettings;
     this.settingsCacheTimestamp = Date.now();
 
-    return this.settingsCache;
+    return JSON.parse(JSON.stringify(this.settingsCache)) as Settings;
   }
 
   /**
@@ -61,7 +62,8 @@ export class StateManager {
    */
   async getLogData(forceRefresh = false): Promise<LogData> {
     if (!forceRefresh && this.logDataCache && this.isLogDataCacheValid()) {
-      return this.logDataCache;
+      // Return a deep clone to prevent external mutations
+      return JSON.parse(JSON.stringify(this.logDataCache)) as LogData;
     }
 
     // Fetch from storage
@@ -69,7 +71,7 @@ export class StateManager {
     this.logDataCache = logData || defaultLogData;
     this.logDataCacheTimestamp = Date.now();
 
-    return this.logDataCache;
+    return JSON.parse(JSON.stringify(this.logDataCache)) as LogData;
   }
 
   /**
