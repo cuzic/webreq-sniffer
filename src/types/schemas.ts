@@ -101,6 +101,16 @@ export const logHeadersSchema = z
   })
   .optional();
 
+export const manifestMetadataSchema = z
+  .object({
+    type: z.enum(['hls', 'dash']),
+    title: z.string().optional(),
+    programDateTime: z.string().optional(),
+    targetDuration: z.number().optional(),
+    segmentPattern: z.string().optional(),
+  })
+  .optional();
+
 export const pageMetadataSchema = z
   .object({
     pageTitle: z.string(),
@@ -109,6 +119,7 @@ export const pageMetadataSchema = z
     metaTitle: z.string().optional(),
     metaDescription: z.string().optional(),
     videoTitle: z.string().optional(),
+    manifestMetadata: manifestMetadataSchema,
   })
   .optional();
 

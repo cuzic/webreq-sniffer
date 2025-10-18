@@ -9,16 +9,20 @@ import type { CustomSelector } from '@/types';
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'GET_PAGE_METADATA') {
-    try {
-      // Extract custom selectors from message payload (if provided)
-      const customSelectors = message.customSelectors as CustomSelector[] | undefined;
+    // Handle async metadata collection
+    (async () => {
+      try {
+        // Extract custom selectors from message payload (if provided)
+        const customSelectors = message.customSelectors as CustomSelector[] | undefined;
 
-      const metadata = collectPageMetadata(customSelectors);
-      sendResponse({ metadata });
-    } catch (error) {
-      console.error('Error collecting page metadata:', error);
-      sendResponse({ metadata: null, error: String(error) });
-    }
+        const metadata = await collectPageMetadata(customSelectors);
+        sendResponse({ metadata });
+      } catch (error) {
+        console.error('Error collecting page metadata:', error);
+        sendResponse({ metadata: null, error: String(error) });
+      }
+    })();
+
     return true; // Keep the message channel open for async response
   }
 });

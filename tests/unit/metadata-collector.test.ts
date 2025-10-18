@@ -21,19 +21,21 @@ afterEach(() => {
 
 describe('Metadata Collector', () => {
   describe('collectPageMetadata', () => {
-    it('should collect basic page title', () => {
+    it('should collect basic page title', async () => {
       // Mock document
       const mockDocument = {
         title: 'Test Page Title',
         querySelector: () => null,
+        querySelectorAll: () => [],
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
-      const metadata = collectPageMetadata();
+      const metadata = await collectPageMetadata();
       expect(metadata.pageTitle).toBe('Test Page Title');
     });
 
-    it('should extract OG title from meta tag', () => {
+    it('should extract OG title from meta tag', async () => {
       const ogTitleElement = {
         getAttribute: (attr: string) => (attr === 'content' ? 'OG Test Title' : null),
       };
@@ -44,14 +46,16 @@ describe('Metadata Collector', () => {
           if (selector === 'meta[property="og:title"]') return ogTitleElement;
           return null;
         },
+        querySelectorAll: () => [],
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
-      const metadata = collectPageMetadata();
+      const metadata = await collectPageMetadata();
       expect(metadata.ogTitle).toBe('OG Test Title');
     });
 
-    it('should extract meta description', () => {
+    it('should extract meta description', async () => {
       const metaDescElement = {
         getAttribute: (attr: string) => (attr === 'content' ? 'Test description' : null),
       };
@@ -62,14 +66,15 @@ describe('Metadata Collector', () => {
           if (selector === 'meta[name="description"]') return metaDescElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
-      const metadata = collectPageMetadata();
+      const metadata = await collectPageMetadata();
       expect(metadata.metaDescription).toBe('Test description');
     });
 
-    it('should extract video title using custom selector with matching pattern', () => {
+    it('should extract video title using custom selector with matching pattern', async () => {
       const videoTitleElement = {
         textContent: 'Custom Video Title  ',
         getAttribute: () => null,
@@ -81,6 +86,7 @@ describe('Metadata Collector', () => {
           if (selector === 'h1.video-title') return videoTitleElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -103,14 +109,15 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBe('Custom Video Title');
     });
 
-    it('should skip disabled custom selectors', () => {
+    it('should skip disabled custom selectors', async () => {
       const mockDocument = {
         title: 'Page Title',
         querySelector: () => null,
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -132,11 +139,11 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBeUndefined();
     });
 
-    it('should extract attribute value when attribute is specified', () => {
+    it('should extract attribute value when attribute is specified', async () => {
       const videoElement = {
         textContent: 'Text Content',
         getAttribute: (attr: string) => (attr === 'data-title' ? 'Attribute Title' : null),
@@ -148,6 +155,7 @@ describe('Metadata Collector', () => {
           if (selector === 'div.player') return videoElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -170,11 +178,11 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBe('Attribute Title');
     });
 
-    it('should match wildcard patterns', () => {
+    it('should match wildcard patterns', async () => {
       const videoTitleElement = {
         textContent: 'Video Title',
         getAttribute: () => null,
@@ -186,6 +194,7 @@ describe('Metadata Collector', () => {
           if (selector === 'h1') return videoTitleElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -207,11 +216,11 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBe('Video Title');
     });
 
-    it('should try multiple selectors in order and use first match', () => {
+    it('should try multiple selectors in order and use first match', async () => {
       const firstElement = {
         textContent: 'First Title',
         getAttribute: () => null,
@@ -223,6 +232,7 @@ describe('Metadata Collector', () => {
           if (selector === 'h1.first') return firstElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -251,11 +261,11 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBe('First Title');
     });
 
-    it('should fallback to video element title attribute when no custom selector matches', () => {
+    it('should fallback to video element title attribute when no custom selector matches', async () => {
       const videoElement = {
         getAttribute: (attr: string) => (attr === 'title' ? 'Video Element Title' : null),
       };
@@ -266,6 +276,7 @@ describe('Metadata Collector', () => {
           if (selector === 'video') return videoElement;
           return null;
         },
+        querySelectorAll: () => [],
       } as unknown as Document;
       global.document = mockDocument;
 
@@ -287,7 +298,7 @@ describe('Metadata Collector', () => {
         },
       ];
 
-      const metadata = collectPageMetadata(customSelectors);
+      const metadata = await collectPageMetadata(customSelectors);
       expect(metadata.videoTitle).toBe('Video Element Title');
     });
   });

@@ -80,6 +80,17 @@ export interface LogHeaders {
 }
 
 /**
+ * Manifest Metadata extracted from HLS/DASH files
+ */
+export interface ManifestMetadata {
+  type: 'hls' | 'dash'; // Manifest type
+  title?: string; // Extracted from #EXT-X-TITLE or MPD @title
+  programDateTime?: string; // #EXT-X-PROGRAM-DATE-TIME
+  targetDuration?: number; // #EXT-X-TARGETDURATION
+  segmentPattern?: string; // Common pattern in segment URLs
+}
+
+/**
  * Page Metadata collected from Content Script
  */
 export interface PageMetadata {
@@ -89,6 +100,7 @@ export interface PageMetadata {
   metaTitle?: string; // <meta name="title">
   metaDescription?: string; // <meta name="description">
   videoTitle?: string; // Video player-specific title
+  manifestMetadata?: ManifestMetadata; // Metadata from HLS/DASH manifest
 }
 
 /**

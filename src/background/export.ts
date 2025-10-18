@@ -201,13 +201,46 @@ export function generateFilename(
         metadata.videoTitle || metadata.ogTitle || metadata.pageTitle || 'untitled'
       )
       .replace(/{metaTitle}/g, metadata.metaTitle || metadata.pageTitle || 'untitled');
+
+    // Manifest metadata variables
+    if (metadata.manifestMetadata) {
+      const manifest = metadata.manifestMetadata;
+      filename = filename
+        .replace(/{manifestTitle}/g, manifest.title || 'untitled')
+        .replace(/{manifestType}/g, manifest.type)
+        .replace(/{segmentPattern}/g, manifest.segmentPattern || 'unknown');
+
+      if (manifest.programDateTime) {
+        // Extract date from ISO 8601 format
+        try {
+          const dateObj = new Date(manifest.programDateTime);
+          const manifestDate = dateObj.toISOString().slice(0, 10);
+          filename = filename.replace(/{programDate}/g, manifestDate);
+        } catch {
+          filename = filename.replace(/{programDate}/g, 'unknown');
+        }
+      } else {
+        filename = filename.replace(/{programDate}/g, 'unknown');
+      }
+    } else {
+      // Fallback if no manifest metadata
+      filename = filename
+        .replace(/{manifestTitle}/g, 'unknown')
+        .replace(/{manifestType}/g, 'unknown')
+        .replace(/{segmentPattern}/g, 'unknown')
+        .replace(/{programDate}/g, 'unknown');
+    }
   } else {
     // Fallback if no metadata
     filename = filename
       .replace(/{pageTitle}/g, 'untitled')
       .replace(/{ogTitle}/g, 'untitled')
       .replace(/{videoTitle}/g, 'untitled')
-      .replace(/{metaTitle}/g, 'untitled');
+      .replace(/{metaTitle}/g, 'untitled')
+      .replace(/{manifestTitle}/g, 'unknown')
+      .replace(/{manifestType}/g, 'unknown')
+      .replace(/{segmentPattern}/g, 'unknown')
+      .replace(/{programDate}/g, 'unknown');
   }
 
   // Sanitize filename
