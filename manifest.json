@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "WebreqSniffer",
+  "version": "0.1.0",
+  "description": "Monitors network requests and generates download scripts",
+  "permissions": [
+    "webRequest",
+    "storage",
+    "downloads",
+    "activeTab",
+    "unlimitedStorage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/background/index.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "WebreqSniffer"
+  },
+  "options_page": "src/options/options.html",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "incognito": "split"
+}
