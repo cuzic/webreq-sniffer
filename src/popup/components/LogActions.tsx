@@ -81,8 +81,14 @@ export function LogActions({
           <DropdownMenuItem onClick={() => handleFormatSelect('bash-yt-dlp')}>
             Bash yt-dlp (.sh)
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleFormatSelect('bash-batch-download')}>
+            Bash Batch Download (.sh)
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleFormatSelect('powershell')}>
             PowerShell (.ps1)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleFormatSelect('powershell-batch-download')}>
+            PowerShell Batch Download (.ps1)
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

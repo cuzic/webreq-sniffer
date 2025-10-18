@@ -62,7 +62,9 @@ export function ExportDialog({
     'bash-curl': 'Bash curl (.sh)',
     'bash-curl-headers': 'Bash curl with headers (.sh)',
     'bash-yt-dlp': 'Bash yt-dlp (.sh)',
+    'bash-batch-download': 'Bash Batch Download (HLS/DASH) (.sh)',
     powershell: 'PowerShell (.ps1)',
+    'powershell-batch-download': 'PowerShell Batch Download (HLS/DASH) (.ps1)',
     json: 'JSON (.json)',
   };
 
