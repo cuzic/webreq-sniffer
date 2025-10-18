@@ -11,65 +11,59 @@ import { createLogEntry, addLogEntry } from './logging';
  * Handle request before it's sent
  * This is where we capture and filter requests
  */
-export async function handleBeforeRequest(
-  details: chrome.webRequest.WebRequestDetails
-): Promise<void> {
-  // Check if monitoring is enabled
-  const logData = await getLogData();
-  if (!logData.isMonitoring) {
-    return; // Not monitoring, skip
-  }
+export function handleBeforeRequest(details: any): undefined {
+  // Process request asynchronously (don't block the request)
+  (async () => {
+    try {
+      // Check if monitoring is enabled
+      const logData = await getLogData();
+      if (!logData.isMonitoring) {
+        return; // Not monitoring, skip
+      }
 
-  // Check tab scope
-  if (logData.monitoringScope === 'activeTab') {
-    if (details.tabId !== logData.activeTabId) {
-      return; // Not the active tab, skip
+      // Check tab scope
+      if (logData.monitoringScope === 'activeTab') {
+        if (details.tabId !== logData.activeTabId) {
+          return; // Not the active tab, skip
+        }
+      }
+
+      // Get settings for filtering
+      const settings = await getSettings();
+
+      // Apply filtering logic
+      if (!shouldLogRequest(details.url, details.type, settings)) {
+        return; // Filtered out
+      }
+
+      // Create log entry
+      const entry = createLogEntry(details);
+
+      // Add to log
+      await addLogEntry(entry, settings);
+
+      console.log('Request logged:', details.url);
+    } catch (error) {
+      console.error('Error handling request:', error);
     }
-  }
+  })();
 
-  // Get settings for filtering
-  const settings = await getSettings();
-
-  // Apply filtering logic
-  if (!shouldLogRequest(details.url, details.type, settings)) {
-    return; // Filtered out
-  }
-
-  // Create log entry
-  const entry = createLogEntry(details);
-
-  // Add to log
-  await addLogEntry(entry, settings);
-
-  console.log('Request logged:', details.url);
+  return undefined;
 }
 
 /**
  * Handle request headers before they're sent
  * This is where we can capture headers if needed
  */
-export async function handleBeforeSendHeaders(
-  details: chrome.webRequest.WebRequestHeadersDetails
-): Promise<void> {
-  // Check if monitoring is enabled
-  const logData = await getLogData();
-  if (!logData.isMonitoring) {
-    return;
-  }
-
-  // Get settings
-  const settings = await getSettings();
-
-  // Only collect headers if enabled
-  if (!settings.headerPolicy.basic) {
-    return;
-  }
-
+export function handleBeforeSendHeaders(details: any): undefined {
+  // Check if monitoring is enabled - async check removed to match signature
   // Headers will be added to the existing entry
   // For now, we create entries in onBeforeRequest
   // This listener can be used for header-specific logic later
 
   console.log('Headers captured for:', details.url);
+
+  return undefined;
 }
 
 /**

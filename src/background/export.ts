@@ -116,6 +116,8 @@ export function generatePowerShell(entries: LogEntry[]): string {
 
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
+    if (!entry) continue;
+
     const url = `"${escapePowerShellArg(entry.url)}"`;
 
     lines.push(`# Request ${i + 1}`);
@@ -151,7 +153,7 @@ export function generateFilename(
 
   // Extract domain from first entry's URL
   let domain = 'logs';
-  if (entries.length > 0) {
+  if (entries.length > 0 && entries[0]) {
     try {
       const url = new URL(entries[0].url);
       domain = url.hostname.replace(/[^a-zA-Z0-9.-]/g, '_');

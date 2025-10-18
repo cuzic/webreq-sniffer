@@ -383,11 +383,11 @@ export function Options() {
                   <div className="flex-1">
                     <Checkbox
                       id="sensitive-headers"
-                      checked={settings.headerPolicy.sensitive}
+                      checked={settings.headerPolicy.sensitiveEnabled}
                       onCheckedChange={(checked) =>
                         setSettings({
                           ...settings,
-                          headerPolicy: { ...settings.headerPolicy, sensitive: !!checked },
+                          headerPolicy: { ...settings.headerPolicy, sensitiveEnabled: !!checked },
                         })
                       }
                     />

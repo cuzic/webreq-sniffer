@@ -54,7 +54,7 @@ export function isMessageType(value: unknown): value is MessageType {
 export function validateSettings(value: unknown): Settings {
   const result = settingsSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid Settings: ${JSON.stringify(result.error.errors)}`);
+    throw new Error(`Invalid Settings: ${JSON.stringify(result.error.issues)}`);
   }
   return result.data;
 }
@@ -66,7 +66,7 @@ export function validateSettings(value: unknown): Settings {
 export function validateLogEntry(value: unknown): LogEntry {
   const result = logEntrySchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid LogEntry: ${JSON.stringify(result.error.errors)}`);
+    throw new Error(`Invalid LogEntry: ${JSON.stringify(result.error.issues)}`);
   }
   return result.data;
 }
@@ -78,7 +78,7 @@ export function validateLogEntry(value: unknown): LogEntry {
 export function validateLogData(value: unknown): LogData {
   const result = logDataSchema.safeParse(value);
   if (!result.success) {
-    throw new Error(`Invalid LogData: ${JSON.stringify(result.error.errors)}`);
+    throw new Error(`Invalid LogData: ${JSON.stringify(result.error.issues)}`);
   }
   return result.data;
 }
