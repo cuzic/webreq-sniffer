@@ -25,6 +25,9 @@ export type {
   MessageResponse,
 } from './models';
 
+// Export action types
+export type { EntryActions, SelectionActions } from './actions';
+
 // Export all Zod schemas
 export {
   presetsSchema,

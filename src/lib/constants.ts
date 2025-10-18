@@ -1,78 +1,121 @@
 /**
  * Application Constants
- * Centralized configuration for magic numbers and strings
+ *
+ * This file centralizes all magic numbers and configuration values
+ * used throughout the application for better maintainability.
  */
 
-/**
- * Storage and caching configuration
- */
+// ============================================================================
+// UI Refresh Intervals (milliseconds)
+// ============================================================================
+
+export const REFRESH_INTERVALS = {
+  /** Popup status polling interval */
+  STATUS_POLLING: 1000,
+  /** Log update interval */
+  LOG_UPDATE: 500,
+} as const;
+
+// ============================================================================
+// Export Preview Settings
+// ============================================================================
+
+export const EXPORT_PREVIEW = {
+  /** Number of entries to show in preview */
+  ENTRY_COUNT: 3,
+  /** Number of lines to show when collapsed */
+  LINE_LIMIT: 15,
+} as const;
+
+// ============================================================================
+// Monitoring Settings
+// ============================================================================
+
+export const MONITORING = {
+  /** Badge text displayed when monitoring is active */
+  BADGE_TEXT: '●',
+} as const;
+
+// ============================================================================
+// Badge Display Settings
+// ============================================================================
+
+export const BADGE = {
+  /** Threshold for 'k' notation (1k, 2k, etc.) */
+  THRESHOLD_K: 1000,
+  /** Threshold for integer 'k' notation (10k, 11k, etc.) */
+  THRESHOLD_10K: 10000,
+  /** Badge color when monitoring is active */
+  COLOR_MONITORING: '#4CAF50',
+  /** Badge color when monitoring is stopped */
+  COLOR_STOPPED: '#757575',
+} as const;
+
+// ============================================================================
+// UI Dimensions
+// ============================================================================
+
+export const UI = {
+  /** Popup window width in pixels */
+  POPUP_WIDTH: 400,
+  /** Log list container height in pixels */
+  LOG_LIST_HEIGHT: 300,
+  /** Details dialog max width */
+  DETAILS_DIALOG_WIDTH: '3xl',
+} as const;
+
+// ============================================================================
+// Storage Settings
+// ============================================================================
+
 export const STORAGE = {
-  /** Cache TTL in milliseconds (5 seconds) */
-  CACHE_TTL: 5000,
-  /** Minimum allowed entries */
-  MAX_ENTRIES_MIN: 1,
-  /** Maximum allowed entries */
-  MAX_ENTRIES_MAX: 10000,
-  /** Default maximum entries in ring buffer */
+  /** Default maximum number of log entries to store */
   DEFAULT_MAX_ENTRIES: 3000,
 } as const;
 
-/**
- * Monitoring badge configuration
- */
-export const MONITORING = {
-  /** Badge text when monitoring is active */
-  BADGE_TEXT: 'REC',
-  /** Badge background color (red) */
-  BADGE_COLOR: '#FF0000',
-} as const;
+// ============================================================================
+// Export Settings
+// ============================================================================
 
-/**
- * Export configuration
- */
 export const EXPORT = {
-  /** Default filename template with placeholders */
+  /** Default filename template for exports */
   DEFAULT_FILENAME_TEMPLATE: 'netlog_{date}_{domain}.{ext}',
-  /** Default domain name when URL parsing fails */
-  DEFAULT_DOMAIN: 'logs',
-  /** File extensions for each export format */
-  EXTENSIONS: {
-    'url-list': 'txt',
-    'bash-curl': 'sh',
-    'bash-curl-headers': 'sh',
-    'bash-yt-dlp': 'sh',
-    powershell: 'ps1',
-    json: 'json',
-  },
 } as const;
 
-/**
- * Filtering patterns for HLS/DASH media
- */
+// ============================================================================
+// Filtering Patterns
+// ============================================================================
+
 export const FILTERING = {
-  /** Media segment patterns (HLS/DASH) */
+  /** Regex patterns for HLS/DASH media segments (excluded in playlistOnly mode) */
   SEGMENT_PATTERNS: [
-    /\.ts$/i, // HLS segments
+    /\.ts$/i, // HLS MPEG-TS segments
     /\.m4s$/i, // DASH segments
-    /segment\d+/i, // Generic segment pattern
-    /-\d+\.m4s$/i, // Numbered DASH segments
-    /chunk-\d+/i, // Chunk pattern
-  ],
-  /** Playlist/manifest patterns */
+    /\.fmp4$/i, // Fragmented MP4
+  ] as const,
+
+  /** Regex patterns for playlists/manifests (always captured) */
   PLAYLIST_PATTERNS: [
-    /\.m3u8$/i, // HLS playlist
-    /\.mpd$/i, // DASH manifest
-    /master\.m3u8/i, // HLS master playlist
-    /index\.m3u8/i, // HLS index
-    /playlist/i, // Generic playlist
-    /manifest/i, // Generic manifest
-  ],
+    /\.m3u8$/i, // HLS playlists
+    /\.mpd$/i, // DASH manifests
+  ] as const,
 } as const;
 
+// ============================================================================
+// Type Guards
+// ============================================================================
+
 /**
- * UI configuration
+ * Type guard to check if a value is a valid export format
  */
-export const UI = {
-  /** Duration to show success message in milliseconds (3 seconds) */
-  TOAST_DURATION: 3000,
-} as const;
+export function isExportFormat(value: string): boolean {
+  const validFormats = [
+    'url-list',
+    'bash-curl',
+    'bash-curl-headers',
+    'bash-yt-dlp',
+    'powershell',
+    'json',
+  ];
+  return validFormats.includes(value);
+}

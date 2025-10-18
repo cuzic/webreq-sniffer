@@ -24,6 +24,13 @@ import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
+import {
+  generateCurlCommand,
+  generateCurlWithHeaders,
+  generateYtDlpCommand,
+} from '@/lib/command-generators';
+import { REFRESH_INTERVALS } from '@/lib/constants';
+import { tryCatch, tryCatchSync } from '@/lib/error-handling';
 
 interface Status {
   isMonitoring: boolean;
@@ -49,7 +56,7 @@ export function Popup() {
   // Load status on mount and set up refresh interval
   useEffect(() => {
     loadStatus();
-    const interval = setInterval(loadStatus, 1000); // Refresh every second
+    const interval = setInterval(loadStatus, REFRESH_INTERVALS.STATUS_POLLING);
     return () => clearInterval(interval);
   }, []);
 
@@ -149,6 +156,16 @@ export function Popup() {
     });
   }, [status.entries, searchTerm, filterType]);
 
+  // Compute entries that will be exported (for preview)
+  const entriesToExport = useMemo(() => {
+    if (selectedIds.size > 0) {
+      // Export selected entries only
+      return status.entries.filter((entry) => selectedIds.has(entry.id));
+    }
+    // Export all entries when nothing is selected
+    return status.entries;
+  }, [status.entries, selectedIds]);
+
   // Selection handlers
   function handleToggle(id: string) {
     setSelectedIds((prev) => {
@@ -170,43 +187,105 @@ export function Popup() {
     setSelectedIds(new Set());
   }
 
+  function handleInvertSelection() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      filteredEntries.forEach((entry) => {
+        if (next.has(entry.id)) {
+          next.delete(entry.id);
+        } else {
+          next.add(entry.id);
+        }
+      });
+      return next;
+    });
+  }
+
   // Quick action handlers
   async function handleCopyUrl(entry: LogEntry) {
-    try {
-      await navigator.clipboard.writeText(entry.url);
+    const result = await tryCatch(
+      () => navigator.clipboard.writeText(entry.url),
+      'URLのコピーに失敗しました'
+    );
+    if (result !== null) {
       toast.success('URLをコピーしました');
-    } catch (error) {
-      console.error('Failed to copy URL:', error);
-      toast.error('URLのコピーに失敗しました');
     }
   }
 
   function handleOpenInTab(entry: LogEntry) {
-    try {
-      chrome.tabs.create({ url: entry.url });
+    const result = tryCatchSync(
+      () => chrome.tabs.create({ url: entry.url }),
+      'URLを開けませんでした'
+    );
+    if (result !== null) {
       toast.success('新しいタブで開きました');
-    } catch (error) {
-      console.error('Failed to open URL:', error);
-      toast.error('URLを開けませんでした');
     }
   }
 
   async function handleExportSingle(entry: LogEntry) {
     setLoading(true);
-    try {
-      const filename = await exportLogs('json', [entry.id]);
+    const filename = await tryCatch(
+      () => exportLogs('json', [entry.id]),
+      'エクスポートに失敗しました'
+    );
+    if (filename !== null) {
       toast.success(`${filename} をエクスポートしました`);
-    } catch (error) {
-      console.error('Failed to export entry:', error);
-      toast.error('エクスポートに失敗しました');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   function handleShowDetails(entry: LogEntry) {
     setDetailsEntry(entry);
     setShowDetailsDialog(true);
+  }
+
+  async function handleCopyCurl(entry: LogEntry) {
+    const command = generateCurlCommand(entry);
+    const result = await tryCatch(
+      () => navigator.clipboard.writeText(command),
+      'コピーに失敗しました'
+    );
+    if (result !== null) {
+      toast.success('curlコマンドをコピーしました');
+    }
+  }
+
+  async function handleCopyCurlWithHeaders(entry: LogEntry) {
+    const command = generateCurlWithHeaders(entry);
+    const result = await tryCatch(
+      () => navigator.clipboard.writeText(command),
+      'コピーに失敗しました'
+    );
+    if (result !== null) {
+      toast.success('curlコマンド（ヘッダー付き）をコピーしました');
+    }
+  }
+
+  async function handleCopyYtDlp(entry: LogEntry) {
+    const command = generateYtDlpCommand(entry);
+    const result = await tryCatch(
+      () => navigator.clipboard.writeText(command),
+      'コピーに失敗しました'
+    );
+    if (result !== null) {
+      toast.success('yt-dlpコマンドをコピーしました');
+    }
+  }
+
+  async function handleDelete(entry: LogEntry) {
+    // Remove entry from selected IDs if it's selected
+    if (selectedIds.has(entry.id)) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(entry.id);
+        return next;
+      });
+    }
+
+    // Delete the entry via messaging
+    // Note: We would need to add a deleteEntry function to messaging.ts
+    // For now, just show a toast
+    toast.info('削除機能は実装中です');
   }
 
   return (
@@ -272,13 +351,22 @@ export function Popup() {
             <LogList
               entries={filteredEntries}
               selectedIds={selectedIds}
-              onToggle={handleToggle}
-              onSelectAll={handleSelectAll}
-              onClearAll={handleClearAll}
-              onCopyUrl={handleCopyUrl}
-              onOpenInTab={handleOpenInTab}
-              onExport={handleExportSingle}
-              onShowDetails={handleShowDetails}
+              selectionActions={{
+                onToggle: handleToggle,
+                onSelectAll: handleSelectAll,
+                onClearAll: handleClearAll,
+                onInvertSelection: handleInvertSelection,
+              }}
+              entryActions={{
+                onCopyUrl: handleCopyUrl,
+                onOpenInTab: handleOpenInTab,
+                onExport: handleExportSingle,
+                onShowDetails: handleShowDetails,
+                onDelete: handleDelete,
+                onCopyCurl: handleCopyCurl,
+                onCopyCurlWithHeaders: handleCopyCurlWithHeaders,
+                onCopyYtDlp: handleCopyYtDlp,
+              }}
             />
           </CardContent>
         </Card>
@@ -294,6 +382,7 @@ export function Popup() {
           <LogActions
             entryCount={status.entryCount}
             selectedCount={selectedIds.size}
+            entries={entriesToExport}
             onExport={handleExport}
             onClear={handleClear}
           />

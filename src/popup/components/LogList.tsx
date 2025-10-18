@@ -3,34 +3,21 @@
  * Displays list of captured log entries
  */
 
-import type { LogEntry } from '@/types';
+import type { LogEntry, SelectionActions, EntryActions } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { LogEntryActions } from './LogEntryActions';
+import { getTypeColor, getTypeBadgeColor, getTypeIcon, getTypeDisplayName } from '@/lib/ui-helpers';
 
 interface LogListProps {
   entries: LogEntry[];
   selectedIds: Set<string>;
-  onToggle: (id: string) => void;
-  onSelectAll: () => void;
-  onClearAll: () => void;
-  onCopyUrl: (entry: LogEntry) => void;
-  onOpenInTab: (entry: LogEntry) => void;
-  onExport: (entry: LogEntry) => void;
-  onShowDetails: (entry: LogEntry) => void;
+  selectionActions: SelectionActions;
+  entryActions: EntryActions;
 }
 
-export function LogList({
-  entries,
-  selectedIds,
-  onToggle,
-  onSelectAll,
-  onClearAll,
-  onCopyUrl,
-  onOpenInTab,
-  onExport,
-  onShowDetails,
-}: LogListProps) {
+export function LogList({ entries, selectedIds, selectionActions, entryActions }: LogListProps) {
+  const { onToggle, onSelectAll, onClearAll, onInvertSelection } = selectionActions;
   if (entries.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -46,24 +33,32 @@ export function LogList({
     <div className="space-y-3">
       {/* Selection controls */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            id="select-all"
-            checked={allSelected}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                onSelectAll();
-              } else {
-                onClearAll();
-              }
-            }}
-          />
-          <label
-            htmlFor="select-all"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="select-all"
+              checked={allSelected}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  onSelectAll();
+                } else {
+                  onClearAll();
+                }
+              }}
+            />
+            <label
+              htmlFor="select-all"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              すべて選択
+            </label>
+          </div>
+          <button
+            onClick={onInvertSelection}
+            className="text-sm text-primary hover:underline cursor-pointer"
           >
-            すべて選択
-          </label>
+            選択を反転
+          </button>
         </div>
         <div className="text-sm text-muted-foreground">
           選択: {selectedIds.size}/{entries.length}件
@@ -79,10 +74,7 @@ export function LogList({
               entry={entry}
               selected={selectedIds.has(entry.id)}
               onToggle={() => onToggle(entry.id)}
-              onCopyUrl={onCopyUrl}
-              onOpenInTab={onOpenInTab}
-              onExport={onExport}
-              onShowDetails={onShowDetails}
+              entryActions={entryActions}
             />
           ))}
         </div>
@@ -95,21 +87,10 @@ interface LogEntryItemProps {
   entry: LogEntry;
   selected: boolean;
   onToggle: () => void;
-  onCopyUrl: (entry: LogEntry) => void;
-  onOpenInTab: (entry: LogEntry) => void;
-  onExport: (entry: LogEntry) => void;
-  onShowDetails: (entry: LogEntry) => void;
+  entryActions: EntryActions;
 }
 
-function LogEntryItem({
-  entry,
-  selected,
-  onToggle,
-  onCopyUrl,
-  onOpenInTab,
-  onExport,
-  onShowDetails,
-}: LogEntryItemProps) {
+function LogEntryItem({ entry, selected, onToggle, entryActions }: LogEntryItemProps) {
   // Extract domain from URL
   let domain = '';
   let path = entry.url;
@@ -121,10 +102,15 @@ function LogEntryItem({
     // Invalid URL, use as-is
   }
 
+  const typeColorClass = getTypeColor(entry.type);
+  const typeBadgeClass = getTypeBadgeColor(entry.type);
+  const typeIcon = getTypeIcon(entry.type);
+  const typeDisplay = getTypeDisplayName(entry.type);
+
   return (
     <div
-      className={`group rounded-lg border p-3 hover:bg-muted/50 transition-colors cursor-pointer ${
-        selected ? 'bg-muted/50 border-primary' : ''
+      className={`group rounded-lg border p-3 transition-colors cursor-pointer ${
+        selected ? 'border-primary ring-2 ring-primary/20' : typeColorClass
       }`}
       onClick={onToggle}
     >
@@ -143,27 +129,22 @@ function LogEntryItem({
           <div className="text-sm font-mono break-all">{path || entry.url}</div>
 
           {/* Meta info */}
-          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <span className="font-semibold">{entry.method}</span>
+          <div className="flex items-center gap-2 mt-2 text-xs">
+            <span className="font-semibold text-muted-foreground">{entry.method}</span>
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${typeBadgeClass}`}
+            >
+              <span>{typeIcon}</span>
+              <span>{typeDisplay}</span>
             </span>
-            <span className="inline-flex items-center gap-1">
-              <span>{entry.type}</span>
-            </span>
-            <span className="inline-flex items-center gap-1">
+            <span className="text-muted-foreground">
               {new Date(entry.timestamp).toLocaleTimeString('ja-JP')}
             </span>
           </div>
         </div>
 
         {/* Action buttons */}
-        <LogEntryActions
-          entry={entry}
-          onCopyUrl={onCopyUrl}
-          onOpenInTab={onOpenInTab}
-          onExport={onExport}
-          onShowDetails={onShowDetails}
-        />
+        <LogEntryActions entry={entry} actions={entryActions} />
       </div>
     </div>
   );
