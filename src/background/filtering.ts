@@ -4,6 +4,7 @@
  */
 
 import type { Settings } from '@/types';
+import { FILTERING } from '@/lib/constants';
 
 /**
  * Helper: Check if URL matches a single pattern (supports wildcards)
@@ -49,41 +50,22 @@ export function matchesResourceType(type: string, resourceTypes: string[]): bool
 /**
  * Helper: Test URL against array of regex patterns
  */
-function matchesAnyPattern(url: string, patterns: RegExp[]): boolean {
+function matchesAnyPattern(url: string, patterns: readonly RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(url));
 }
-
-// Media segment patterns (HLS/DASH)
-const SEGMENT_PATTERNS = [
-  /\.ts$/i, // HLS segments
-  /\.m4s$/i, // DASH segments
-  /segment\d+/i, // Generic segment pattern
-  /-\d+\.m4s$/i, // Numbered DASH segments
-  /chunk-\d+/i, // Chunk pattern
-];
-
-// Playlist/manifest patterns
-const PLAYLIST_PATTERNS = [
-  /\.m3u8$/i, // HLS playlist
-  /\.mpd$/i, // DASH manifest
-  /master\.m3u8/i, // HLS master playlist
-  /index\.m3u8/i, // HLS index
-  /playlist/i, // Generic playlist
-  /manifest/i, // Generic manifest
-];
 
 /**
  * Check if URL is a HLS/MPD segment (should be excluded in playlistOnly mode)
  */
 export function isMediaSegment(url: string): boolean {
-  return matchesAnyPattern(url, SEGMENT_PATTERNS);
+  return matchesAnyPattern(url, FILTERING.SEGMENT_PATTERNS);
 }
 
 /**
  * Check if URL is a playlist/manifest (should be kept even in playlistOnly mode)
  */
 export function isPlaylistOrManifest(url: string): boolean {
-  return matchesAnyPattern(url, PLAYLIST_PATTERNS);
+  return matchesAnyPattern(url, FILTERING.PLAYLIST_PATTERNS);
 }
 
 /**

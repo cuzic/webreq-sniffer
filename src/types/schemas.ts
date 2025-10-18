@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { STORAGE, EXPORT } from '@/lib/constants';
 
 // ========================================
 // Settings Schemas
@@ -158,10 +159,10 @@ export const defaultSettings: z.infer<typeof settingsSchema> = {
   },
   hlsMpdMode: 'playlistOnly',
   limits: {
-    maxEntries: 3000,
+    maxEntries: STORAGE.DEFAULT_MAX_ENTRIES,
   },
   exportSettings: {
-    filenameTemplate: 'netlog_{date}_{domain}.{ext}',
+    filenameTemplate: EXPORT.DEFAULT_FILENAME_TEMPLATE,
     newline: 'LF',
   },
   ui: {

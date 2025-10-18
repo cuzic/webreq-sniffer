@@ -6,6 +6,7 @@
 import type { IStorageAdapter } from '@/lib/adapters/storage-adapter';
 import type { Settings, LogData } from '@/types';
 import { defaultSettings, defaultLogData } from '@/types';
+import { STORAGE } from '@/lib/constants';
 
 /**
  * State Manager with caching
@@ -20,7 +21,7 @@ export class StateManager {
   constructor(
     private localAdapter: IStorageAdapter,
     private syncAdapter: IStorageAdapter,
-    private cacheTTL: number = 5000 // Default 5 seconds
+    private cacheTTL: number = STORAGE.CACHE_TTL
   ) {}
 
   /**

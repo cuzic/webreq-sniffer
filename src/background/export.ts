@@ -5,6 +5,7 @@
 
 import type { LogEntry, LogHeaders, ExportFormat, ExportSettings } from '@/types';
 import { ExportError } from '@/lib/errors';
+import { EXPORT } from '@/lib/constants';
 
 /**
  * Escape string for Bash shell (single quotes)
@@ -162,7 +163,7 @@ export function generateFilename(
   const date = now.toISOString().slice(0, 10); // YYYY-MM-DD
 
   // Extract domain from first entry's URL
-  let domain = 'logs';
+  let domain: string = EXPORT.DEFAULT_DOMAIN;
   if (entries.length > 0 && entries[0]) {
     try {
       const url = new URL(entries[0].url);
@@ -173,14 +174,7 @@ export function generateFilename(
   }
 
   // Determine extension
-  const extensions: Record<ExportFormat, string> = {
-    'url-list': 'txt',
-    'bash-curl': 'sh',
-    'bash-curl-headers': 'sh',
-    'bash-yt-dlp': 'sh',
-    powershell: 'ps1',
-  };
-  const ext = extensions[format];
+  const ext = EXPORT.EXTENSIONS[format];
 
   // Replace placeholders
   return template

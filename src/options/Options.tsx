@@ -14,6 +14,7 @@ import { FiltersTab } from './tabs/FiltersTab';
 import { CollectionTab } from './tabs/CollectionTab';
 import { LimitsTab } from './tabs/LimitsTab';
 import { AdvancedTab } from './tabs/AdvancedTab';
+import { UI } from '@/lib/constants';
 
 export function Options() {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
@@ -39,7 +40,7 @@ export function Options() {
     try {
       await updateSettings(settings);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => setSaved(false), UI.TOAST_DURATION);
     } catch (error) {
       console.error('Failed to save settings:', error);
       alert(`Failed to save settings: ${error}`);
