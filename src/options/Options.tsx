@@ -15,6 +15,7 @@ import { CollectionTab } from './tabs/CollectionTab';
 import { LimitsTab } from './tabs/LimitsTab';
 import { AdvancedTab } from './tabs/AdvancedTab';
 import { PresetsTab } from './tabs/PresetsTab';
+import { ExportTab } from './tabs/ExportTab';
 import { UI } from '@/lib/constants';
 
 export function Options() {
@@ -63,11 +64,12 @@ export function Options() {
 
         {/* Tabs */}
         <Tabs defaultValue="filters" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="presets">Presets</TabsTrigger>
             <TabsTrigger value="filters">Filters</TabsTrigger>
             <TabsTrigger value="collection">Collection</TabsTrigger>
             <TabsTrigger value="limits">Limits</TabsTrigger>
+            <TabsTrigger value="export">Export</TabsTrigger>
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
           </TabsList>
 
@@ -85,6 +87,10 @@ export function Options() {
 
           <TabsContent value="limits">
             <LimitsTab settings={settings} onSettingsChange={setSettings} />
+          </TabsContent>
+
+          <TabsContent value="export">
+            <ExportTab settings={settings} onSettingsChange={setSettings} />
           </TabsContent>
 
           <TabsContent value="advanced">

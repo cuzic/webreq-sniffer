@@ -27,9 +27,20 @@ export const limitsSchema = z.object({
 
 export const newlineSchema = z.enum(['LF', 'CRLF']);
 
+export const exportTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  template: z.string().min(1),
+  fileExtension: z.string(),
+  isBuiltIn: z.boolean(),
+  description: z.string().optional(),
+});
+
 export const exportSettingsSchema = z.object({
   filenameTemplate: z.string().min(1),
   newline: newlineSchema,
+  customTemplates: z.array(exportTemplateSchema),
+  defaultTemplateId: z.string(),
 });
 
 export const uiSettingsSchema = z.object({
@@ -177,6 +188,8 @@ export const defaultSettings: z.infer<typeof settingsSchema> = {
   exportSettings: {
     filenameTemplate: EXPORT.DEFAULT_FILENAME_TEMPLATE,
     newline: 'LF',
+    customTemplates: [],
+    defaultTemplateId: 'url-list',
   },
   ui: {
     showBadge: true,

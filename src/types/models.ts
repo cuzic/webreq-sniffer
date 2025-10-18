@@ -27,6 +27,8 @@ export type Newline = 'LF' | 'CRLF';
 export interface ExportSettings {
   filenameTemplate: string; // e.g., "netlog_{date}_{domain}.{ext}"
   newline: Newline;
+  customTemplates: ExportTemplate[];
+  defaultTemplateId: string;
 }
 
 export interface UISettings {
