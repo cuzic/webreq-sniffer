@@ -80,6 +80,18 @@ export interface LogHeaders {
 }
 
 /**
+ * Stream Variant information (different quality/bitrate options)
+ */
+export interface StreamVariant {
+  resolution?: string; // "1920x1080"
+  bandwidth?: number; // bits per second
+  codecs?: string; // "avc1.640028,mp4a.40.2"
+  frameRate?: number; // 30
+  url?: string; // Variant playlist URL (HLS) or Representation ID (DASH)
+  label?: string; // Human-readable label (e.g., "1080p", "720p")
+}
+
+/**
  * Manifest Metadata extracted from HLS/DASH files
  */
 export interface ManifestMetadata {
@@ -88,6 +100,7 @@ export interface ManifestMetadata {
   programDateTime?: string; // #EXT-X-PROGRAM-DATE-TIME
   targetDuration?: number; // #EXT-X-TARGETDURATION
   segmentPattern?: string; // Common pattern in segment URLs
+  variants?: StreamVariant[]; // Available stream variants (different qualities)
 }
 
 /**
