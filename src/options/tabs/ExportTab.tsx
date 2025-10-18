@@ -14,9 +14,10 @@ import { TemplatePreview } from '../components/TemplatePreview';
 import { TemplateEditorDialog } from '../components/TemplateEditorDialog';
 import { CustomSelectorManager } from '../components/CustomSelectorManager';
 import { TemplateEvaluationPreview } from '../components/TemplateEvaluationPreview';
+import { TemplateExpressionHelp } from '../components/TemplateExpressionHelp';
 import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, HelpCircle } from 'lucide-react';
 
 interface ExportTabProps {
   settings: Settings;
@@ -35,6 +36,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ExportTemplate | undefined>(undefined);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   // Load entries for preview
   useEffect(() => {
@@ -277,10 +279,18 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
       {/* Filename Template Section */}
       <Card>
         <CardHeader>
-          <CardTitle>ファイル名テンプレート</CardTitle>
-          <CardDescription>
-            エクスポート時のファイル名を設定します。JavaScript式を使用できます。
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>ファイル名テンプレート</CardTitle>
+              <CardDescription>
+                エクスポート時のファイル名を設定します。JavaScript式を使用できます。
+              </CardDescription>
+            </div>
+            <Button onClick={() => setHelpOpen(true)} size="sm" variant="outline">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              ヘルプ
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -305,6 +315,80 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
               <p className="text-xs text-muted-foreground">
                 例: {'{videoTitle?.toLowerCase().replace(/\\s+/g, "_")}_{date}.{ext}'}
               </p>
+            </div>
+
+            {/* Quick Insert Buttons */}
+            <div className="space-y-2">
+              <Label className="text-sm">クイック挿入</Label>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const template = '{videoTitle ?? pageTitle}_{date}.{ext}';
+                    onSettingsChange({
+                      ...settings,
+                      exportSettings: {
+                        ...settings.exportSettings,
+                        filenameTemplate: template,
+                      },
+                    });
+                  }}
+                >
+                  基本
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const template =
+                      '{videoTitle?.toLowerCase().replace(/\\s+/g, "_")}_{date}.{ext}';
+                    onSettingsChange({
+                      ...settings,
+                      exportSettings: {
+                        ...settings.exportSettings,
+                        filenameTemplate: template,
+                      },
+                    });
+                  }}
+                >
+                  YouTube風
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const template =
+                      '{slugify(truncate(videoTitle ?? pageTitle, 50))}_{timestamp}.{ext}';
+                    onSettingsChange({
+                      ...settings,
+                      exportSettings: {
+                        ...settings.exportSettings,
+                        filenameTemplate: template,
+                      },
+                    });
+                  }}
+                >
+                  スラッグ化
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    const template =
+                      '{manifestType === "hls" ? "stream" : "video"}_{domain}_{programDate ?? date}.{ext}';
+                    onSettingsChange({
+                      ...settings,
+                      exportSettings: {
+                        ...settings.exportSettings,
+                        filenameTemplate: template,
+                      },
+                    });
+                  }}
+                >
+                  マニフェスト対応
+                </Button>
+              </div>
             </div>
 
             {/* Live Preview */}
@@ -435,6 +519,9 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
         template={editingTemplate}
         onSave={handleSaveTemplate}
       />
+
+      {/* Template Expression Help Dialog */}
+      <TemplateExpressionHelp open={helpOpen} onOpenChange={setHelpOpen} />
     </div>
   );
 }
