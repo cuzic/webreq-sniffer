@@ -165,10 +165,10 @@ export const filters: Record<string, FilterFunction> = {
   },
 
   /**
-   * Conditional: if value is empty, return thenValue
+   * Conditional: if value is empty or undefined, return thenValue
    */
   ifEmpty: (value: string, thenValue: string | number): string => {
-    if (!value || value === '') {
+    if (!value || value === '' || value === 'undefined') {
       return String(thenValue);
     }
     return value;
