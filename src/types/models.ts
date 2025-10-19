@@ -131,7 +131,8 @@ export interface LogEntry {
   frameId: number;
   timestamp: number; // Epoch milliseconds
   initiator?: string; // e.g., "https://example.com"
-  headers?: LogHeaders;
+  headers?: LogHeaders; // Response headers
+  requestHeaders?: Record<string, string>; // Request headers (for curl/yt-dlp commands)
   dedupeKey: string; // Hash of (url + key headers) for deduplication
   pageMetadata?: PageMetadata; // Page metadata from content script
 }

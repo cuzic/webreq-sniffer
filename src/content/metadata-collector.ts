@@ -77,7 +77,7 @@ export async function collectPageMetadata(
  */
 function findManifestUrl(): string | null {
   // Check video elements
-  const videoElements = document.querySelectorAll('video');
+  const videoElements = Array.from(document.querySelectorAll('video'));
   for (const video of videoElements) {
     const src = video.getAttribute('src');
     if (src && detectManifestType(src)) {
@@ -85,7 +85,7 @@ function findManifestUrl(): string | null {
     }
 
     // Check source children
-    const sources = video.querySelectorAll('source');
+    const sources = Array.from(video.querySelectorAll('source'));
     for (const source of sources) {
       const sourceSrc = source.getAttribute('src');
       if (sourceSrc && detectManifestType(sourceSrc)) {
@@ -104,7 +104,7 @@ function findManifestUrl(): string | null {
   }
 
   // Check all source elements globally
-  const allSources = document.querySelectorAll('source');
+  const allSources = Array.from(document.querySelectorAll('source'));
   for (const source of allSources) {
     const src = source.getAttribute('src');
     if (src && detectManifestType(src)) {

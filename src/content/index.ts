@@ -8,7 +8,7 @@ import type { CustomSelector } from '@/types';
 import { Logger } from '@/lib/logger';
 
 // Listen for messages from background script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === 'GET_PAGE_METADATA') {
     // Handle async metadata collection
     (async () => {
@@ -26,9 +26,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     return true; // Keep the message channel open for async response
   }
+
+  return false; // Synchronous response for other message types
 });
 
 // Log that content script has loaded (for debugging)
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   Logger.info('content-script', '[WebreqSniffer] Content script loaded', {});
 }

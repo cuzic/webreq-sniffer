@@ -26,6 +26,8 @@ export type {
   CustomPreset,
   ExportFormat,
   ExportOptions,
+  ExportTemplate,
+  EnrichedLogEntry,
   MessageType,
   Message,
   MessageResponse,

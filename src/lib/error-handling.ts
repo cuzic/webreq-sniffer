@@ -18,9 +18,12 @@ export class AppError extends Error {
     super(message);
     this.name = 'AppError';
 
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AppError);
+    // Maintains proper stack trace for where our error was thrown (V8 only)
+    if ('captureStackTrace' in Error) {
+      const ErrorConstructor = Error as typeof Error & {
+        captureStackTrace(targetObject: object, constructorOpt?: (...args: any[]) => any): void;
+      };
+      ErrorConstructor.captureStackTrace(this, AppError);
     }
   }
 }
