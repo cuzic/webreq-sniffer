@@ -3,6 +3,7 @@
  * Displays list of captured log entries
  */
 
+import { useMemo, memo } from 'react';
 import type { LogEntry, SelectionActions, EntryActions } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -27,7 +28,11 @@ export function LogList({ entries, selectedIds, selectionActions, entryActions }
     );
   }
 
-  const allSelected = entries.length > 0 && entries.every((entry) => selectedIds.has(entry.id));
+  // Memoize expensive calculation
+  const allSelected = useMemo(
+    () => entries.length > 0 && entries.every((entry) => selectedIds.has(entry.id)),
+    [entries, selectedIds]
+  );
 
   return (
     <div className="space-y-3">
@@ -90,22 +95,31 @@ interface LogEntryItemProps {
   entryActions: EntryActions;
 }
 
-function LogEntryItem({ entry, selected, onToggle, entryActions }: LogEntryItemProps) {
-  // Extract domain from URL
-  let domain = '';
-  let path = entry.url;
-  try {
-    const url = new URL(entry.url);
-    domain = url.hostname;
-    path = url.pathname + url.search;
-  } catch {
-    // Invalid URL, use as-is
-  }
+const LogEntryItem = memo(function LogEntryItem({
+  entry,
+  selected,
+  onToggle,
+  entryActions,
+}: LogEntryItemProps) {
+  // Extract domain from URL (memoized)
+  const { domain, path } = useMemo(() => {
+    try {
+      const url = new URL(entry.url);
+      return {
+        domain: url.hostname,
+        path: url.pathname + url.search,
+      };
+    } catch {
+      // Invalid URL, use as-is
+      return { domain: '', path: entry.url };
+    }
+  }, [entry.url]);
 
-  const typeColorClass = getTypeColor(entry.type);
-  const typeBadgeClass = getTypeBadgeColor(entry.type);
-  const typeIcon = getTypeIcon(entry.type);
-  const typeDisplay = getTypeDisplayName(entry.type);
+  // Memoize UI helper calls
+  const typeColorClass = useMemo(() => getTypeColor(entry.type), [entry.type]);
+  const typeBadgeClass = useMemo(() => getTypeBadgeColor(entry.type), [entry.type]);
+  const typeIcon = useMemo(() => getTypeIcon(entry.type), [entry.type]);
+  const typeDisplay = useMemo(() => getTypeDisplayName(entry.type), [entry.type]);
 
   return (
     <div
@@ -148,4 +162,4 @@ function LogEntryItem({ entry, selected, onToggle, entryActions }: LogEntryItemP
       </div>
     </div>
   );
-}
+});

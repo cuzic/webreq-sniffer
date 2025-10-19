@@ -3,7 +3,7 @@
  * Shows export preview before downloading
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { ExportFormat, LogEntry } from '@/types';
 import {
   Dialog,
@@ -19,6 +19,19 @@ import { generateExportContent } from '@/lib/export';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EXPORT_PREVIEW } from '@/lib/constants';
 import { Logger } from '@/lib/logger';
+
+// Format labels (defined outside component to avoid recreation)
+const FORMAT_LABELS: Record<ExportFormat, string> = {
+  'url-list': 'URL List (.txt)',
+  'bash-curl': 'Bash curl (.sh)',
+  'bash-curl-headers': 'Bash curl with headers (.sh)',
+  'bash-yt-dlp': 'Bash yt-dlp (.sh)',
+  'bash-yt-dlp-cookies': 'Bash yt-dlp with cookies (.sh)',
+  'bash-batch-download': 'Bash Batch Download (HLS/DASH) (.sh)',
+  powershell: 'PowerShell (.ps1)',
+  'powershell-batch-download': 'PowerShell Batch Download (HLS/DASH) (.ps1)',
+  json: 'JSON (.json)',
+};
 
 interface ExportDialogProps {
   open: boolean;
@@ -60,25 +73,18 @@ export function ExportDialog({
     }
   }, [open, format, entries]);
 
-  // Format labels
-  const formatLabels: Record<ExportFormat, string> = {
-    'url-list': 'URL List (.txt)',
-    'bash-curl': 'Bash curl (.sh)',
-    'bash-curl-headers': 'Bash curl with headers (.sh)',
-    'bash-yt-dlp': 'Bash yt-dlp (.sh)',
-    'bash-yt-dlp-cookies': 'Bash yt-dlp with cookies (.sh)',
-    'bash-batch-download': 'Bash Batch Download (HLS/DASH) (.sh)',
-    powershell: 'PowerShell (.ps1)',
-    'powershell-batch-download': 'PowerShell Batch Download (HLS/DASH) (.ps1)',
-    json: 'JSON (.json)',
-  };
+  // Memoize format label
+  const formatLabel = useMemo(() => FORMAT_LABELS[format] || format, [format]);
 
-  const formatLabel = formatLabels[format] || format;
-
-  // Calculate preview lines
-  const previewLines = preview.split('\n');
-  const displayedLines = expanded ? previewLines : previewLines.slice(0, EXPORT_PREVIEW.LINE_LIMIT);
-  const hasMoreLines = previewLines.length > EXPORT_PREVIEW.LINE_LIMIT;
+  // Memoize preview line calculations
+  const { previewLines, displayedLines, hasMoreLines } = useMemo(() => {
+    const lines = preview.split('\n');
+    return {
+      previewLines: lines,
+      displayedLines: expanded ? lines : lines.slice(0, EXPORT_PREVIEW.LINE_LIMIT),
+      hasMoreLines: lines.length > EXPORT_PREVIEW.LINE_LIMIT,
+    };
+  }, [preview, expanded]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
