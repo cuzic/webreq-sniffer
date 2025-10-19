@@ -14,6 +14,7 @@ import { LogActions } from './components/LogActions';
 import { SearchBar } from './components/SearchBar';
 import { FilterDropdown } from './components/FilterDropdown';
 import { QuickFilters } from './components/QuickFilters';
+import { FilterPreviewBadge } from './components/FilterPreviewBadge';
 import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
 import { Toaster } from '@/components/ui/sonner';
@@ -157,11 +158,16 @@ export function Popup() {
             <QuickFilters settings={settings} onApplyPreset={handleApplyPreset} />
 
             {/* Search and Filter */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <div className="flex-1">
                 <SearchBar value={searchTerm} onChange={setSearchTerm} />
               </div>
               <FilterDropdown value={filterType} onChange={setFilterType} />
+              <FilterPreviewBadge
+                entries={monitoring.status.entries}
+                searchTerm={searchTerm}
+                filterType={filterType}
+              />
             </div>
 
             {/* Log List */}
