@@ -5,7 +5,7 @@
 
 import type { LogEntry, EntryActions } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Copy, ExternalLink, Download, Info, Trash2, ChevronDown } from 'lucide-react';
+import { Copy, ExternalLink, Download, Info, Trash2, ChevronDown, FileText } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { detectManifestType } from '@/lib/manifest-parser';
 
 interface LogEntryActionsProps {
   entry: LogEntry;
@@ -29,11 +30,14 @@ export function LogEntryActions({ entry, actions }: LogEntryActionsProps) {
     onCopyCurl,
     onCopyCurlWithHeaders,
     onCopyYtDlp,
+    onViewManifestMetadata,
   } = actions;
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.stopPropagation(); // Prevent row selection toggle
     action();
   };
+
+  const isManifest = detectManifestType(entry.url) !== null;
 
   return (
     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -93,6 +97,17 @@ export function LogEntryActions({ entry, actions }: LogEntryActionsProps) {
       >
         <Download className="h-3.5 w-3.5" />
       </Button>
+      {isManifest && onViewManifestMetadata && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={(e) => handleAction(e, () => onViewManifestMetadata(entry))}
+          title="マニフェストメタデータを表示"
+        >
+          <FileText className="h-3.5 w-3.5" />
+        </Button>
+      )}
       <Button
         size="sm"
         variant="ghost"

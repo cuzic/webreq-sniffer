@@ -16,7 +16,9 @@ import { tryCatch, tryCatchSync } from '@/lib/error-handling';
 
 export function useEntryActions(
   setDetailsEntry: (entry: LogEntry) => void,
-  setShowDetailsDialog: (show: boolean) => void
+  setShowDetailsDialog: (show: boolean) => void,
+  setManifestUrl: (url: string) => void,
+  setShowManifestDialog: (show: boolean) => void
 ) {
   const [loading, setLoading] = useState(false);
 
@@ -95,6 +97,11 @@ export function useEntryActions(
     toast.info('削除機能は実装中です');
   }
 
+  function handleViewManifestMetadata(entry: LogEntry) {
+    setManifestUrl(entry.url);
+    setShowManifestDialog(true);
+  }
+
   const entryActions: EntryActions = {
     onCopyUrl: handleCopyUrl,
     onOpenInTab: handleOpenInTab,
@@ -104,6 +111,7 @@ export function useEntryActions(
     onCopyCurl: handleCopyCurl,
     onCopyCurlWithHeaders: handleCopyCurlWithHeaders,
     onCopyYtDlp: handleCopyYtDlp,
+    onViewManifestMetadata: handleViewManifestMetadata,
   };
 
   return {

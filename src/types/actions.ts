@@ -25,6 +25,8 @@ export interface EntryActions {
   onCopyCurlWithHeaders?: (entry: LogEntry) => void;
   /** Copy yt-dlp command to clipboard (optional) */
   onCopyYtDlp?: (entry: LogEntry) => void;
+  /** View manifest metadata (optional, for .m3u8/.mpd files) */
+  onViewManifestMetadata?: (entry: LogEntry) => void;
 }
 
 /**

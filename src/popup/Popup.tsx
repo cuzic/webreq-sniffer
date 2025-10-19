@@ -19,6 +19,7 @@ import { DuplicateControl } from './components/DuplicateControl';
 import { ManifestFilterControl } from './components/ManifestFilterControl';
 import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
+import { ManifestMetadataDialog } from './components/ManifestMetadataDialog';
 import { Toaster } from '@/components/ui/sonner';
 import { useMonitoring } from './hooks/useMonitoring';
 import { useSelection } from './hooks/useSelection';
@@ -35,6 +36,8 @@ export function Popup() {
   const [filterType, setFilterType] = useState<string>('all');
   const [detailsEntry, setDetailsEntry] = useState<LogEntry | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [manifestUrl, setManifestUrl] = useState('');
+  const [showManifestDialog, setShowManifestDialog] = useState(false);
   const [settings, setSettings] = useState<SettingsType>(defaultSettings);
   const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
   const [duplicateStrategy, setDuplicateStrategy] = useState<DuplicateStrategy>(
@@ -45,7 +48,12 @@ export function Popup() {
   // Custom hooks
   const monitoring = useMonitoring();
   const selection = useSelection(monitoring.status.entries);
-  const entryActionsHook = useEntryActions(setDetailsEntry, setShowDetailsDialog);
+  const entryActionsHook = useEntryActions(
+    setDetailsEntry,
+    setShowDetailsDialog,
+    setManifestUrl,
+    setShowManifestDialog
+  );
 
   // Load settings and filter preferences on mount
   useEffect(() => {
@@ -260,6 +268,13 @@ export function Popup() {
         entry={detailsEntry}
         open={showDetailsDialog}
         onOpenChange={setShowDetailsDialog}
+      />
+
+      {/* Manifest Metadata Dialog */}
+      <ManifestMetadataDialog
+        url={manifestUrl}
+        open={showManifestDialog}
+        onOpenChange={setShowManifestDialog}
       />
 
       {/* Toast Notifications */}
