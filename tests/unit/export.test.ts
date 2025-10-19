@@ -387,34 +387,34 @@ describe('Export Logic', () => {
   });
 
   describe('generateExportContent', () => {
-    it('should generate URL list format', () => {
-      const content = generateExportContent(mockEntries, 'url-list');
+    it('should generate URL list format', async () => {
+      const content = await generateExportContent(mockEntries, 'url-list');
       expect(content).toContain('https://example.com/video.m3u8');
     });
 
-    it('should generate Bash curl format', () => {
-      const content = generateExportContent(mockEntries, 'bash-curl');
+    it('should generate Bash curl format', async () => {
+      const content = await generateExportContent(mockEntries, 'bash-curl');
       expect(content).toContain('#!/bin/bash');
       expect(content).toContain('curl');
     });
 
-    it('should generate Bash curl with headers format', () => {
-      const content = generateExportContent(mockEntries, 'bash-curl-headers');
+    it('should generate Bash curl with headers format', async () => {
+      const content = await generateExportContent(mockEntries, 'bash-curl-headers');
       expect(content).toContain('-H');
     });
 
-    it('should generate Bash yt-dlp format', () => {
-      const content = generateExportContent(mockEntries, 'bash-yt-dlp');
+    it('should generate Bash yt-dlp format', async () => {
+      const content = await generateExportContent(mockEntries, 'bash-yt-dlp');
       expect(content).toContain('yt-dlp');
     });
 
-    it('should generate PowerShell format', () => {
-      const content = generateExportContent(mockEntries, 'powershell');
+    it('should generate PowerShell format', async () => {
+      const content = await generateExportContent(mockEntries, 'powershell');
       expect(content).toContain('Invoke-WebRequest');
     });
 
-    it('should throw error for unknown format', () => {
-      expect(() => generateExportContent(mockEntries, 'unknown' as ExportFormat)).toThrow(
+    it('should throw error for unknown format', async () => {
+      await expect(generateExportContent(mockEntries, 'unknown' as ExportFormat)).rejects.toThrow(
         'Template not found for format'
       );
     });

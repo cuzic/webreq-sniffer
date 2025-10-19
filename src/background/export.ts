@@ -14,6 +14,7 @@ import {
   generateBashBatchDownload,
   generatePowerShellBatchDownload,
 } from '@/lib/batch-download-generator';
+import { getCookiesForUrl, generateNetscapeCookieJar } from '@/lib/cookie-manager';
 
 /**
  * Check if entries contain manifest with variants
@@ -145,6 +146,65 @@ export function generateBashYtDlp(entries: LogEntry[]): string {
 }
 
 /**
+ * Generate Bash yt-dlp script with cookies
+ * Creates embedded cookie jar in the script
+ */
+export async function generateBashYtDlpWithCookies(entries: LogEntry[]): Promise<string> {
+  const lines = createBashHeader();
+
+  if (entries.length === 0) {
+    return lines.join('\n') + '\n';
+  }
+
+  // Collect cookies from all unique domains
+  const uniqueUrls = [...new Set(entries.map((e) => e.url))];
+  const allCookies = await Promise.all(uniqueUrls.map((url) => getCookiesForUrl(url)));
+  const flatCookies = allCookies.flat();
+
+  // Generate cookie jar if cookies exist
+  if (flatCookies.length > 0) {
+    const cookieJar = generateNetscapeCookieJar(flatCookies);
+
+    lines.push('# Create cookie jar file');
+    lines.push("cat > cookies.txt << 'COOKIE_JAR'");
+    lines.push(cookieJar.trim());
+    lines.push('COOKIE_JAR');
+    lines.push('');
+  }
+
+  // Generate download commands
+  for (const entry of entries) {
+    const url = escapeShellArg(entry.url);
+    let command = 'yt-dlp';
+
+    // Add cookies if available
+    if (flatCookies.length > 0) {
+      command += ' --cookies cookies.txt';
+    }
+
+    command += formatHeaders(entry.headers, 'yt-dlp');
+
+    // Add referer if present (yt-dlp specific)
+    if (entry.headers?.Referer) {
+      const referer = escapeShellArg(entry.headers.Referer);
+      command += ` --referer ${referer}`;
+    }
+
+    command += ` ${url}`;
+    lines.push(command);
+  }
+
+  // Cleanup
+  if (flatCookies.length > 0) {
+    lines.push('');
+    lines.push('# Clean up cookie jar');
+    lines.push('rm -f cookies.txt');
+  }
+
+  return lines.join('\n') + '\n';
+}
+
+/**
  * Generate PowerShell script
  */
 export function generatePowerShell(entries: LogEntry[]): string {
@@ -244,9 +304,12 @@ export function generateFilename(
 
 /**
  * Generate export content based on format
- * Batch download formats use specialized generators, others use templates
+ * Batch download formats and cookie formats use specialized generators, others use templates
  */
-export function generateExportContent(entries: LogEntry[], format: ExportFormat): string {
+export async function generateExportContent(
+  entries: LogEntry[],
+  format: ExportFormat
+): Promise<string> {
   // Handle batch download formats specially
   if (format === 'bash-batch-download') {
     if (entries.length === 0) {
@@ -260,6 +323,11 @@ export function generateExportContent(entries: LogEntry[], format: ExportFormat)
       throw new ExportError('No entries to export', { format });
     }
     return generatePowerShellBatchDownload(entries[0]);
+  }
+
+  // Handle cookie format (async)
+  if (format === 'bash-yt-dlp-cookies') {
+    return await generateBashYtDlpWithCookies(entries);
   }
 
   // All other formats use templates
@@ -283,7 +351,7 @@ export async function exportLogs(
   }
 
   // Generate content
-  const content = generateExportContent(entries, format);
+  const content = await generateExportContent(entries, format);
 
   // Apply newline settings
   const finalContent = exportSettings.newline === 'CRLF' ? content.replace(/\n/g, '\r\n') : content;

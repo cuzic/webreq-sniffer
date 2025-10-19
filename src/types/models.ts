@@ -176,6 +176,7 @@ export type ExportFormat =
   | 'bash-curl' // Bash script with curl commands
   | 'bash-curl-headers' // Bash script with curl + headers
   | 'bash-yt-dlp' // Bash script with yt-dlp commands
+  | 'bash-yt-dlp-cookies' // Bash script with yt-dlp + cookies
   | 'bash-batch-download' // Bash batch download with quality selection
   | 'powershell' // PowerShell script
   | 'powershell-batch-download' // PowerShell batch download with quality selection

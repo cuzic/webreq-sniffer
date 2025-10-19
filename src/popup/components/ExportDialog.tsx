@@ -46,13 +46,16 @@ export function ExportDialog({
       const entriesToPreview = entries.slice(0, previewCount);
       setPreviewEntries(entriesToPreview);
 
-      try {
-        const content = generateExportContent(entriesToPreview, format);
-        setPreview(content);
-      } catch (error) {
-        console.error('Failed to generate preview:', error);
-        setPreview('プレビューの生成に失敗しました');
-      }
+      // Generate preview asynchronously
+      (async () => {
+        try {
+          const content = await generateExportContent(entriesToPreview, format);
+          setPreview(content);
+        } catch (error) {
+          console.error('Failed to generate preview:', error);
+          setPreview('プレビューの生成に失敗しました');
+        }
+      })();
     }
   }, [open, format, entries]);
 
@@ -62,6 +65,7 @@ export function ExportDialog({
     'bash-curl': 'Bash curl (.sh)',
     'bash-curl-headers': 'Bash curl with headers (.sh)',
     'bash-yt-dlp': 'Bash yt-dlp (.sh)',
+    'bash-yt-dlp-cookies': 'Bash yt-dlp with cookies (.sh)',
     'bash-batch-download': 'Bash Batch Download (HLS/DASH) (.sh)',
     powershell: 'PowerShell (.ps1)',
     'powershell-batch-download': 'PowerShell Batch Download (HLS/DASH) (.ps1)',

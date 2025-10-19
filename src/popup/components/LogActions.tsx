@@ -70,6 +70,7 @@ export function LogActions({
         { format: 'bash-curl' as ExportFormat, label: 'Bash curl (.sh)' },
         { format: 'bash-curl-headers' as ExportFormat, label: 'Bash curl with headers (.sh)' },
         { format: 'bash-yt-dlp' as ExportFormat, label: 'Bash yt-dlp (.sh)' },
+        { format: 'bash-yt-dlp-cookies' as ExportFormat, label: 'Bash yt-dlp with cookies (.sh)' },
         { format: 'powershell' as ExportFormat, label: 'PowerShell (.ps1)' },
       ];
     }
