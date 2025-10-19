@@ -153,7 +153,7 @@ export function Popup() {
   }
 
   return (
-    <div className="w-[600px] p-4 space-y-4">
+    <div className="w-[800px] p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">WebreqSniffer</h1>
