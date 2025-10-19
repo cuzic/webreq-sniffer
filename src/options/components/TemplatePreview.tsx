@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { renderTemplate, validateTemplate } from '@/lib/template';
+import { renderTemplate, validateTemplate } from '@/lib/mustache-template';
 
 interface TemplatePreviewProps {
   template: string;
