@@ -15,6 +15,7 @@ import { SearchBar } from './components/SearchBar';
 import { FilterDropdown } from './components/FilterDropdown';
 import { QuickFilters } from './components/QuickFilters';
 import { FilterPreviewBadge } from './components/FilterPreviewBadge';
+import { DuplicateControl } from './components/DuplicateControl';
 import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
 import { Toaster } from '@/components/ui/sonner';
@@ -24,6 +25,7 @@ import { useEntryActions } from './hooks/useEntryActions';
 import { applyPreset } from '@/lib/filter-presets';
 import { defaultSettings } from '@/types/schemas';
 import { Logger } from '@/lib/logger';
+import { detectDuplicates, DuplicateStrategy } from '@/lib/duplicate-detector';
 
 export function Popup() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +33,10 @@ export function Popup() {
   const [detailsEntry, setDetailsEntry] = useState<LogEntry | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [settings, setSettings] = useState<SettingsType>(defaultSettings);
+  const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
+  const [duplicateStrategy, setDuplicateStrategy] = useState<DuplicateStrategy>(
+    DuplicateStrategy.KEEP_FIRST
+  );
 
   // Custom hooks
   const monitoring = useMonitoring();
@@ -70,9 +76,9 @@ export function Popup() {
     }
   }
 
-  // Filter entries based on search term and filter type
+  // Filter entries based on search term, filter type, and duplicate settings
   const filteredEntries = useMemo(() => {
-    return monitoring.status.entries.filter((entry) => {
+    let entries = monitoring.status.entries.filter((entry) => {
       // Search term filter
       if (searchTerm && !entry.url.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
@@ -85,7 +91,15 @@ export function Popup() {
 
       return true;
     });
-  }, [monitoring.status.entries, searchTerm, filterType]);
+
+    // Apply duplicate filtering if enabled
+    if (showDuplicatesOnly) {
+      const duplicates = detectDuplicates(entries);
+      entries = entries.filter((entry) => duplicates[entry.id] !== undefined);
+    }
+
+    return entries;
+  }, [monitoring.status.entries, searchTerm, filterType, showDuplicatesOnly]);
 
   async function handleExport(format: ExportFormat) {
     const loading = monitoring.loading || entryActionsHook.loading;
@@ -169,6 +183,15 @@ export function Popup() {
                 filterType={filterType}
               />
             </div>
+
+            {/* Duplicate Control */}
+            <DuplicateControl
+              entries={monitoring.status.entries}
+              showDuplicatesOnly={showDuplicatesOnly}
+              onToggleDuplicates={setShowDuplicatesOnly}
+              duplicateStrategy={duplicateStrategy}
+              onStrategyChange={setDuplicateStrategy}
+            />
 
             {/* Log List */}
             <LogList
