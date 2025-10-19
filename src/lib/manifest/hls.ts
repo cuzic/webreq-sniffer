@@ -7,6 +7,21 @@ import type { ManifestMetadata, StreamVariant } from '@/types';
 import { Logger } from '../logger';
 
 /**
+ * Check if HLS manifest content is a master playlist
+ * Master playlists contain #EXT-X-STREAM-INF tags
+ * Media playlists contain #EXTINF tags pointing to .ts segments
+ */
+export function isHLSMasterPlaylist(content: string): boolean {
+  if (!content || content.trim().length === 0) {
+    return false;
+  }
+
+  // Master playlists contain #EXT-X-STREAM-INF
+  // This tag indicates variant streams with different bitrates/resolutions
+  return content.includes('#EXT-X-STREAM-INF');
+}
+
+/**
  * Parse HLS (m3u8) manifest content
  */
 export function parseHLSManifest(content: string): ManifestMetadata | null {

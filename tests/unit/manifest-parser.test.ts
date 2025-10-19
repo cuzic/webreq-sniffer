@@ -3,7 +3,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseHLSManifest, parseDASHManifest, detectManifestType } from '@/lib/manifest-parser';
+import {
+  parseHLSManifest,
+  parseDASHManifest,
+  detectManifestType,
+  isMasterPlaylist,
+} from '@/lib/manifest-parser';
 
 describe('Manifest Parser', () => {
   describe('detectManifestType', () => {
@@ -138,6 +143,105 @@ segment003.ts`;
       const result = parseDASHManifest(manifest);
       expect(result).not.toBeNull();
       expect(result?.type).toBe('dash');
+    });
+  });
+
+  describe('isMasterPlaylist', () => {
+    describe('HLS', () => {
+      it('should identify master playlist with EXT-X-STREAM-INF', () => {
+        const masterPlaylist = `#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=640x360
+360p.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=1400000,RESOLUTION=1280x720
+720p.m3u8`;
+
+        expect(isMasterPlaylist(masterPlaylist, 'hls')).toBe(true);
+      });
+
+      it('should identify media playlist without EXT-X-STREAM-INF', () => {
+        const mediaPlaylist = `#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:10
+#EXTINF:9.9,
+segment001.ts
+#EXTINF:9.9,
+segment002.ts`;
+
+        expect(isMasterPlaylist(mediaPlaylist, 'hls')).toBe(false);
+      });
+
+      it('should return false for empty HLS content', () => {
+        expect(isMasterPlaylist('', 'hls')).toBe(false);
+        expect(isMasterPlaylist('#EXTM3U', 'hls')).toBe(false);
+      });
+
+      it('should handle mixed content (master with segments)', () => {
+        // In practice, master playlists should not have segments
+        // but we should still identify it as master if EXT-X-STREAM-INF is present
+        const mixedContent = `#EXTM3U
+#EXT-X-STREAM-INF:BANDWIDTH=800000
+variant.m3u8
+#EXTINF:10.0,
+segment.ts`;
+
+        expect(isMasterPlaylist(mixedContent, 'hls')).toBe(true);
+      });
+    });
+
+    describe('DASH', () => {
+      it('should identify master MPD with Representation elements', () => {
+        const masterMPD = `<?xml version="1.0"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011">
+  <Period>
+    <AdaptationSet>
+      <Representation id="1" bandwidth="800000">
+      </Representation>
+      <Representation id="2" bandwidth="1400000">
+      </Representation>
+    </AdaptationSet>
+  </Period>
+</MPD>`;
+
+        expect(isMasterPlaylist(masterMPD, 'dash')).toBe(true);
+      });
+
+      it('should return false for MPD without Representation elements', () => {
+        const incompleteMPD = `<?xml version="1.0"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011">
+  <Period>
+  </Period>
+</MPD>`;
+
+        expect(isMasterPlaylist(incompleteMPD, 'dash')).toBe(false);
+      });
+
+      it('should return false for invalid XML', () => {
+        expect(isMasterPlaylist('not valid xml', 'dash')).toBe(false);
+      });
+
+      it('should return false for empty DASH content', () => {
+        expect(isMasterPlaylist('', 'dash')).toBe(false);
+      });
+
+      it('should handle MPD with AdaptationSet but no Representation', () => {
+        const mpdWithoutRepresentation = `<?xml version="1.0"?>
+<MPD xmlns="urn:mpeg:dash:schema:mpd:2011">
+  <Period>
+    <AdaptationSet mimeType="video/mp4">
+    </AdaptationSet>
+  </Period>
+</MPD>`;
+
+        expect(isMasterPlaylist(mpdWithoutRepresentation, 'dash')).toBe(false);
+      });
+    });
+
+    describe('Unknown type', () => {
+      it('should return false for unknown manifest types', () => {
+        expect(isMasterPlaylist('any content', 'unknown' as any)).toBe(false);
+        expect(isMasterPlaylist('#EXTM3U', null as any)).toBe(false);
+      });
     });
   });
 });

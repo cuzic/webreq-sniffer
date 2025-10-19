@@ -7,6 +7,36 @@ import type { ManifestMetadata, StreamVariant } from '@/types';
 import { Logger } from '../logger';
 
 /**
+ * Check if DASH manifest content is a master MPD
+ * Master MPD files contain Representation elements
+ * Segment files (.m4s) are not MPD files
+ */
+export function isDASHMasterPlaylist(content: string): boolean {
+  if (!content || content.trim().length === 0) {
+    return false;
+  }
+
+  try {
+    // Parse as XML
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(content, 'text/xml');
+
+    // Check for parsing errors
+    const parseError = xmlDoc.querySelector('parsererror');
+    if (parseError) {
+      return false;
+    }
+
+    // Master MPD must have Representation elements
+    const representations = xmlDoc.querySelectorAll('Representation');
+    return representations.length > 0;
+  } catch (error) {
+    Logger.error('manifest-parser', error, { type: 'DASH-master-check' });
+    return false;
+  }
+}
+
+/**
  * Parse DASH (mpd) manifest content
  */
 export function parseDASHManifest(content: string): ManifestMetadata | null {
