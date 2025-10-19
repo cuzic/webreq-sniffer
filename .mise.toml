@@ -9,7 +9,7 @@ preview = "npm run preview"
 # Build & Package
 build = "npm run build"
 pack = "npm run package:zip"
-release = ["build", "pack"]
+release = "mise run build && mise run pack"
 
 # Testing
 test = "npm test"
