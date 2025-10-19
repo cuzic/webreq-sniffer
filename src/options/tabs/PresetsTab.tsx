@@ -3,20 +3,17 @@
  * Manage custom filter presets
  */
 
-import type { Settings, CustomPreset } from '@/types';
+import type { CustomPreset } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { PresetCard } from '../components/PresetCard';
 import { PresetEditor } from '../components/PresetEditor';
+import { useSettings } from '@/contexts/SettingsContext';
 
-interface PresetsTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function PresetsTab({ settings, onSettingsChange }: PresetsTabProps) {
+export function PresetsTab() {
+  const { settings, updateSettings } = useSettings();
   const [editingPreset, setEditingPreset] = useState<CustomPreset | null>(null);
   const [showEditor, setShowEditor] = useState(false);
 
@@ -31,8 +28,7 @@ export function PresetsTab({ settings, onSettingsChange }: PresetsTabProps) {
   }
 
   function handleDeletePreset(id: string) {
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       customPresets: settings.customPresets.filter((p) => p.id !== id),
     });
   }
@@ -40,14 +36,12 @@ export function PresetsTab({ settings, onSettingsChange }: PresetsTabProps) {
   function handleSavePreset(preset: CustomPreset) {
     if (editingPreset) {
       // Update existing preset
-      onSettingsChange({
-        ...settings,
+      updateSettings({
         customPresets: settings.customPresets.map((p) => (p.id === preset.id ? preset : p)),
       });
     } else {
       // Add new preset
-      onSettingsChange({
-        ...settings,
+      updateSettings({
         customPresets: [...settings.customPresets, preset],
       });
     }
@@ -56,8 +50,7 @@ export function PresetsTab({ settings, onSettingsChange }: PresetsTabProps) {
   }
 
   function handleApplyPreset(preset: CustomPreset) {
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       simpleFilters: preset.simpleFilters,
       regexFilters: preset.regexFilters,
       resourceTypes: preset.resourceTypes,

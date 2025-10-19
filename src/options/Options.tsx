@@ -3,10 +3,6 @@
  * Settings management for WebreqSniffer extension
  */
 
-import { useEffect, useState } from 'react';
-import type { Settings } from '@/types';
-import { getSettings, updateSettings } from './messaging';
-import { defaultSettings } from '@/types/schemas';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save } from 'lucide-react';
@@ -16,39 +12,18 @@ import { LimitsTab } from './tabs/LimitsTab';
 import { AdvancedTab } from './tabs/AdvancedTab';
 import { PresetsTab } from './tabs/PresetsTab';
 import { ExportTab } from './tabs/ExportTab';
-import { UI } from '@/lib/constants';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Logger } from '@/lib/logger';
 
 export function Options() {
-  const [settings, setSettings] = useState<Settings>(defaultSettings);
-  const [loading, setLoading] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    loadSettings();
-  }, []);
-
-  async function loadSettings() {
-    try {
-      const loaded = await getSettings();
-      setSettings(loaded);
-    } catch (error) {
-      Logger.error('Options', error, { context: 'loadSettings' });
-    }
-  }
+  const { saving, saved, hasUnsavedChanges, saveSettings } = useSettings();
 
   async function handleSave() {
-    setLoading(true);
-    setSaved(false);
     try {
-      await updateSettings(settings);
-      setSaved(true);
-      setTimeout(() => setSaved(false), UI.TOAST_DURATION);
+      await saveSettings();
     } catch (error) {
       Logger.error('Options', error, { context: 'saveSettings' });
       alert(`Failed to save settings: ${error}`);
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -75,36 +50,39 @@ export function Options() {
           </TabsList>
 
           <TabsContent value="presets">
-            <PresetsTab settings={settings} onSettingsChange={setSettings} />
+            <PresetsTab />
           </TabsContent>
 
           <TabsContent value="filters">
-            <FiltersTab settings={settings} onSettingsChange={setSettings} />
+            <FiltersTab />
           </TabsContent>
 
           <TabsContent value="collection">
-            <CollectionTab settings={settings} onSettingsChange={setSettings} />
+            <CollectionTab />
           </TabsContent>
 
           <TabsContent value="limits">
-            <LimitsTab settings={settings} onSettingsChange={setSettings} />
+            <LimitsTab />
           </TabsContent>
 
           <TabsContent value="export">
-            <ExportTab settings={settings} onSettingsChange={setSettings} />
+            <ExportTab />
           </TabsContent>
 
           <TabsContent value="advanced">
-            <AdvancedTab settings={settings} onSettingsChange={setSettings} />
+            <AdvancedTab />
           </TabsContent>
         </Tabs>
 
         {/* Save Button */}
         <div className="sticky bottom-0 bg-background pt-6 pb-4 border-t">
           <div className="flex justify-end gap-3">
-            <Button onClick={handleSave} disabled={loading} size="lg">
+            {hasUnsavedChanges && (
+              <p className="text-sm text-muted-foreground self-center">Unsaved changes</p>
+            )}
+            <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges} size="lg">
               <Save className="mr-2 h-4 w-4" />
-              {loading ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
+              {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
             </Button>
           </div>
         </div>

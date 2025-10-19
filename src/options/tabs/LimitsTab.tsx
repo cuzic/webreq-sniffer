@@ -3,19 +3,15 @@
  * Storage limits and export format settings
  */
 
-import type { Settings } from '@/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PipelineTemplateEditor } from '../components/PipelineTemplateEditor';
+import { useSettings } from '@/contexts/SettingsContext';
 
-interface LimitsTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function LimitsTab({ settings, onSettingsChange }: LimitsTabProps) {
+export function LimitsTab() {
+  const { settings, updateSettings } = useSettings();
   return (
     <div className="space-y-6">
       {/* Storage Limits */}
@@ -34,8 +30,7 @@ export function LimitsTab({ settings, onSettingsChange }: LimitsTabProps) {
               max="100000"
               value={settings.limits.maxEntries}
               onChange={(e) =>
-                onSettingsChange({
-                  ...settings,
+                updateSettings({
                   limits: { ...settings.limits, maxEntries: parseInt(e.target.value) || 10000 },
                 })
               }
@@ -59,8 +54,7 @@ export function LimitsTab({ settings, onSettingsChange }: LimitsTabProps) {
           <PipelineTemplateEditor
             value={settings.exportSettings.filenameTemplate}
             onChange={(value) =>
-              onSettingsChange({
-                ...settings,
+              updateSettings({
                 exportSettings: {
                   ...settings.exportSettings,
                   filenameTemplate: value,
@@ -75,8 +69,7 @@ export function LimitsTab({ settings, onSettingsChange }: LimitsTabProps) {
             <RadioGroup
               value={settings.exportSettings.newline}
               onValueChange={(value) =>
-                onSettingsChange({
-                  ...settings,
+                updateSettings({
                   exportSettings: {
                     ...settings.exportSettings,
                     newline: value as 'LF' | 'CRLF',

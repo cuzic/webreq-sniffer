@@ -3,19 +3,15 @@
  * Header collection and HLS/MPD mode settings
  */
 
-import type { Settings } from '@/types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { useSettings } from '@/contexts/SettingsContext';
 
-interface CollectionTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function CollectionTab({ settings, onSettingsChange }: CollectionTabProps) {
+export function CollectionTab() {
+  const { settings, updateSettings } = useSettings();
   return (
     <div className="space-y-6">
       {/* Header Collection */}
@@ -32,8 +28,7 @@ export function CollectionTab({ settings, onSettingsChange }: CollectionTabProps
                 id="basic-headers"
                 checked={settings.headerPolicy.basic}
                 onCheckedChange={(checked) =>
-                  onSettingsChange({
-                    ...settings,
+                  updateSettings({
                     headerPolicy: { ...settings.headerPolicy, basic: !!checked },
                   })
                 }
@@ -54,8 +49,7 @@ export function CollectionTab({ settings, onSettingsChange }: CollectionTabProps
                   id="sensitive-headers"
                   checked={settings.headerPolicy.sensitiveEnabled}
                   onCheckedChange={(checked) =>
-                    onSettingsChange({
-                      ...settings,
+                    updateSettings({
                       headerPolicy: { ...settings.headerPolicy, sensitiveEnabled: !!checked },
                     })
                   }
@@ -87,7 +81,7 @@ export function CollectionTab({ settings, onSettingsChange }: CollectionTabProps
           <RadioGroup
             value={settings.hlsMpdMode}
             onValueChange={(value) =>
-              onSettingsChange({ ...settings, hlsMpdMode: value as 'all' | 'playlistOnly' })
+              updateSettings({ hlsMpdMode: value as 'all' | 'playlistOnly' })
             }
           >
             <div className="space-y-4">
@@ -127,7 +121,7 @@ export function CollectionTab({ settings, onSettingsChange }: CollectionTabProps
           <RadioGroup
             value={settings.targetScope}
             onValueChange={(value) =>
-              onSettingsChange({ ...settings, targetScope: value as 'activeTab' | 'allTabs' })
+              updateSettings({ targetScope: value as 'activeTab' | 'allTabs' })
             }
           >
             <div className="space-y-4">

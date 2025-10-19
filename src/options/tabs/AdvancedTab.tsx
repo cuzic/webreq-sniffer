@@ -3,20 +3,16 @@
  * Advanced settings and data management
  */
 
-import type { Settings } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { defaultSettings } from '@/types/schemas';
+import { useSettings } from '@/contexts/SettingsContext';
 
-interface AdvancedTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function AdvancedTab({ settings, onSettingsChange }: AdvancedTabProps) {
+export function AdvancedTab() {
+  const { settings, updateSettings } = useSettings();
   function handleExportSettings() {
     const dataStr = JSON.stringify(settings, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
@@ -39,7 +35,7 @@ export function AdvancedTab({ settings, onSettingsChange }: AdvancedTabProps) {
       try {
         const text = await file.text();
         const imported = JSON.parse(text);
-        onSettingsChange(imported);
+        updateSettings(imported);
         alert('Settings imported successfully');
       } catch (error) {
         alert(`Failed to import settings: ${error}`);
@@ -50,7 +46,7 @@ export function AdvancedTab({ settings, onSettingsChange }: AdvancedTabProps) {
 
   function handleResetSettings() {
     if (confirm('すべての設定をデフォルトに戻しますか？')) {
-      onSettingsChange(defaultSettings);
+      updateSettings(defaultSettings);
     }
   }
 
@@ -92,8 +88,7 @@ export function AdvancedTab({ settings, onSettingsChange }: AdvancedTabProps) {
               id="show-badge"
               checked={settings.ui.showBadge}
               onCheckedChange={(checked) =>
-                onSettingsChange({
-                  ...settings,
+                updateSettings({
                   ui: { ...settings.ui, showBadge: !!checked },
                 })
               }

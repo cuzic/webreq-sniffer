@@ -3,7 +3,7 @@
  * URL and resource type filtering settings
  */
 
-import type { Settings, PreviewResult } from '@/types';
+import type { PreviewResult } from '@/types';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,7 @@ import { getStatus } from '../messaging';
 import { shouldLogRequest } from '@/background/filtering';
 import { validateRegex } from '@/lib/utils';
 import { Logger } from '@/lib/logger';
+import { useSettings } from '@/contexts/SettingsContext';
 
 const RESOURCE_TYPES = [
   { value: 'main_frame', label: 'Main Frame' },
@@ -51,12 +52,8 @@ const PRESETS = {
   },
 };
 
-interface FiltersTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
+export function FiltersTab() {
+  const { settings, updateSettings } = useSettings();
   const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | undefined>();
@@ -121,8 +118,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
 
   function applyPreset(preset: keyof typeof PRESETS) {
     const p = PRESETS[preset];
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       simpleFilters: p.simpleFilters,
       resourceTypes: p.resourceTypes,
     });
@@ -131,7 +127,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
   function toggleResourceType(type: string) {
     const types = settings.resourceTypes;
     const newTypes = types.includes(type) ? types.filter((t) => t !== type) : [...types, type];
-    onSettingsChange({ ...settings, resourceTypes: newTypes });
+    updateSettings({ resourceTypes: newTypes });
   }
 
   return (
@@ -170,8 +166,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
             rows={5}
             value={settings.simpleFilters.join('\n')}
             onChange={(e) =>
-              onSettingsChange({
-                ...settings,
+              updateSettings({
                 simpleFilters: e.target.value.split('\n').filter((f) => f.trim()),
               })
             }
@@ -193,8 +188,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
             rows={5}
             value={settings.regexFilters.join('\n')}
             onChange={(e) =>
-              onSettingsChange({
-                ...settings,
+              updateSettings({
                 regexFilters: e.target.value.split('\n').filter((f) => f.trim()),
               })
             }
@@ -267,8 +261,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
               rows={4}
               value={settings.allowList.join('\n')}
               onChange={(e) =>
-                onSettingsChange({
-                  ...settings,
+                updateSettings({
                   allowList: e.target.value.split('\n').filter((f) => f.trim()),
                 })
               }
@@ -287,8 +280,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
               rows={4}
               value={settings.denyList.join('\n')}
               onChange={(e) =>
-                onSettingsChange({
-                  ...settings,
+                updateSettings({
                   denyList: e.target.value.split('\n').filter((f) => f.trim()),
                 })
               }

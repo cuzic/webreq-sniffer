@@ -3,7 +3,7 @@
  * Manages CSS selectors for extracting video titles from specific sites
  */
 
-import type { Settings, CustomSelector } from '@/types';
+import type { CustomSelector } from '@/types';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
-
-interface CustomSelectorManagerProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface EditorState {
   isOpen: boolean;
@@ -23,7 +19,8 @@ interface EditorState {
   isNew: boolean;
 }
 
-export function CustomSelectorManager({ settings, onSettingsChange }: CustomSelectorManagerProps) {
+export function CustomSelectorManager() {
+  const { settings, updateSettings } = useSettings();
   const [editor, setEditor] = useState<EditorState>({
     isOpen: false,
     selector: null,
@@ -51,8 +48,7 @@ export function CustomSelectorManager({ settings, onSettingsChange }: CustomSele
 
   function handleDelete(id: string) {
     const updated = settings.customSelectors.filter((s) => s.id !== id);
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       customSelectors: updated,
     });
   }
@@ -61,8 +57,7 @@ export function CustomSelectorManager({ settings, onSettingsChange }: CustomSele
     const updated = settings.customSelectors.map((s) =>
       s.id === id ? { ...s, enabled: !s.enabled } : s
     );
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       customSelectors: updated,
     });
   }
@@ -89,8 +84,7 @@ export function CustomSelectorManager({ settings, onSettingsChange }: CustomSele
       updated = settings.customSelectors.map((s) => (s.id === newSelector.id ? newSelector : s));
     }
 
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       customSelectors: updated,
     });
 

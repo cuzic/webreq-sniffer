@@ -3,7 +3,7 @@
  * Template management and preview
  */
 
-import type { Settings, ExportTemplate, LogEntry } from '@/types';
+import type { ExportTemplate, LogEntry } from '@/types';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,13 +17,10 @@ import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Logger } from '@/lib/logger';
+import { useSettings } from '@/contexts/SettingsContext';
 
-interface ExportTabProps {
-  settings: Settings;
-  onSettingsChange: (settings: Settings) => void;
-}
-
-export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
+export function ExportTab() {
+  const { settings, updateSettings } = useSettings();
   const allTemplates = getAllTemplates(settings.exportSettings.customTemplates);
   const [selectedTemplateId, setSelectedTemplateId] = useState(
     settings.exportSettings.defaultTemplateId || 'json'
@@ -62,8 +59,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
 
   function handleSelectTemplate(id: string) {
     setSelectedTemplateId(id);
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       exportSettings: {
         ...settings.exportSettings,
         defaultTemplateId: id,
@@ -94,8 +90,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
         const newDefaultId =
           selectedTemplateId === currentTemplate.id ? 'url-list' : selectedTemplateId;
 
-        onSettingsChange({
-          ...settings,
+        updateSettings({
           exportSettings: {
             ...settings.exportSettings,
             customTemplates: newCustomTemplates,
@@ -123,8 +118,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
       newCustomTemplates = [...settings.exportSettings.customTemplates, template];
     }
 
-    onSettingsChange({
-      ...settings,
+    updateSettings({
       exportSettings: {
         ...settings.exportSettings,
         customTemplates: newCustomTemplates,
@@ -275,7 +269,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
       </Card>
 
       {/* Custom Selector Manager */}
-      <CustomSelectorManager settings={settings} onSettingsChange={onSettingsChange} />
+      <CustomSelectorManager />
 
       {/* Template Editor Dialog */}
       <TemplateEditorDialog
