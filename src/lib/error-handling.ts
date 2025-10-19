@@ -4,6 +4,7 @@
  */
 
 import { toast } from 'sonner';
+import { Logger } from './logger';
 
 /**
  * Custom application error with context
@@ -29,12 +30,12 @@ export class AppError extends Error {
  * Logs to console and shows toast notification
  */
 export function handleError(error: unknown, userMessage?: string): void {
-  console.error('Error occurred:', error);
+  Logger.error('error-handler', error, { userMessage });
 
   if (error instanceof AppError) {
     // Application error with context
     if (error.context) {
-      console.error('Error context:', error.context);
+      Logger.error('error-handler', 'Error context:', error.context);
     }
     toast.error(userMessage || error.message);
   } else if (error instanceof Error) {

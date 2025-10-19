@@ -14,6 +14,7 @@ import { FilterPreview } from '../components/FilterPreview';
 import { getStatus } from '../messaging';
 import { shouldLogRequest } from '@/background/filtering';
 import { validateRegex } from '@/lib/utils';
+import { Logger } from '@/lib/logger';
 
 const RESOURCE_TYPES = [
   { value: 'main_frame', label: 'Main Frame' },
@@ -87,7 +88,7 @@ export function FiltersTab({ settings, onSettingsChange }: FiltersTabProps) {
           samples,
         });
       } catch (error) {
-        console.error('Failed to calculate preview:', error);
+        Logger.error('FiltersTab', error, { context: 'calculatePreview' });
         setPreviewError(error instanceof Error ? error.message : 'プレビューの計算に失敗しました');
       } finally {
         setPreviewLoading(false);

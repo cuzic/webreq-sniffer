@@ -18,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { generateExportContent } from '@/lib/export';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EXPORT_PREVIEW } from '@/lib/constants';
+import { Logger } from '@/lib/logger';
 
 interface ExportDialogProps {
   open: boolean;
@@ -52,7 +53,7 @@ export function ExportDialog({
           const content = await generateExportContent(entriesToPreview, format);
           setPreview(content);
         } catch (error) {
-          console.error('Failed to generate preview:', error);
+          Logger.error('ExportDialog', error, { format, context: 'generatePreview' });
           setPreview('プレビューの生成に失敗しました');
         }
       })();

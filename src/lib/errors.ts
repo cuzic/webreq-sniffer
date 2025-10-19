@@ -18,7 +18,13 @@ export class WebreqSnifferError extends Error {
 
     // Maintains proper stack trace for where error was thrown (V8 only)
     if ('captureStackTrace' in Error) {
-      (Error as any).captureStackTrace(this, this.constructor);
+      const ErrorConstructor = Error as ErrorConstructor & {
+        captureStackTrace(
+          targetObject: object,
+          constructorOpt?: new (...args: unknown[]) => unknown
+        ): void;
+      };
+      ErrorConstructor.captureStackTrace(this, this.constructor);
     }
   }
 }

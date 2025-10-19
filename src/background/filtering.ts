@@ -5,6 +5,12 @@
 
 import type { Settings } from '@/types';
 import { FILTERING } from '@/lib/constants';
+import { Logger } from '@/lib/logger';
+
+/**
+ * Regex cache for pattern matching performance
+ */
+const regexCache = new Map<string, RegExp>();
 
 /**
  * Helper: Check if URL matches a single pattern (supports wildcards)
@@ -12,7 +18,12 @@ import { FILTERING } from '@/lib/constants';
 function matchesPattern(url: string, pattern: string): boolean {
   try {
     // Support wildcards like *.example.com
-    const regex = new RegExp(pattern.replace(/\*/g, '.*'));
+    // Use cached regex for better performance
+    let regex = regexCache.get(pattern);
+    if (!regex) {
+      regex = new RegExp(pattern.replace(/\*/g, '.*'));
+      regexCache.set(pattern, regex);
+    }
     return regex.test(url);
   } catch {
     // If pattern is invalid regex, do simple string match
@@ -91,8 +102,8 @@ export function matchesRegexFilters(url: string, regexFilters: string[]): boolea
     try {
       const regex = new RegExp(pattern, 'i');
       return regex.test(url);
-    } catch {
-      console.warn(`Invalid regex pattern: ${pattern}`);
+    } catch (error) {
+      Logger.warn('filtering', `Invalid regex pattern: ${pattern}`, { error });
       return false;
     }
   });

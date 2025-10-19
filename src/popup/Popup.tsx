@@ -19,6 +19,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { useMonitoring } from './hooks/useMonitoring';
 import { useSelection } from './hooks/useSelection';
 import { useEntryActions } from './hooks/useEntryActions';
+import { Logger } from '@/lib/logger';
 
 export function Popup() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,7 +60,7 @@ export function Popup() {
       const filename = await exportLogs(format, idsToExport);
       alert(`Exported to ${filename}`);
     } catch (error) {
-      console.error('Failed to export logs:', error);
+      Logger.error('Popup', error, { format, context: 'export' });
       alert(`Failed to export logs: ${error}`);
     }
   }

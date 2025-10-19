@@ -6,6 +6,8 @@
 import type { Settings } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Download, Upload, RotateCcw } from 'lucide-react';
 import { defaultSettings } from '@/types/schemas';
 
@@ -85,9 +87,24 @@ export function AdvancedTab({ settings, onSettingsChange }: AdvancedTabProps) {
           <CardDescription>Customize the extension interface</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Additional UI customization options will be added in future versions.
-          </p>
+          <div className="flex items-start space-x-2">
+            <Checkbox
+              id="show-badge"
+              checked={settings.ui.showBadge}
+              onCheckedChange={(checked) =>
+                onSettingsChange({
+                  ...settings,
+                  ui: { ...settings.ui, showBadge: !!checked },
+                })
+              }
+            />
+            <Label htmlFor="show-badge" className="font-normal">
+              <div className="font-medium">Show Badge Count</div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Display the number of captured requests on the extension icon
+              </p>
+            </Label>
+          </div>
         </CardContent>
       </Card>
 

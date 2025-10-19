@@ -17,6 +17,7 @@ import { AdvancedTab } from './tabs/AdvancedTab';
 import { PresetsTab } from './tabs/PresetsTab';
 import { ExportTab } from './tabs/ExportTab';
 import { UI } from '@/lib/constants';
+import { Logger } from '@/lib/logger';
 
 export function Options() {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
@@ -32,7 +33,7 @@ export function Options() {
       const loaded = await getSettings();
       setSettings(loaded);
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      Logger.error('Options', error, { context: 'loadSettings' });
     }
   }
 
@@ -44,7 +45,7 @@ export function Options() {
       setSaved(true);
       setTimeout(() => setSaved(false), UI.TOAST_DURATION);
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      Logger.error('Options', error, { context: 'saveSettings' });
       alert(`Failed to save settings: ${error}`);
     } finally {
       setLoading(false);

@@ -7,12 +7,6 @@
 // Settings (storage.sync)
 // ========================================
 
-export interface Presets {
-  video: boolean;
-  document: boolean;
-  image: boolean;
-}
-
 export interface HeaderPolicy {
   basic: boolean; // Collect User-Agent, Referer, Origin
   sensitiveEnabled: boolean; // Collect Cookie, Authorization, etc. (Default: false)
@@ -52,7 +46,6 @@ export interface CustomPreset {
 
 export interface Settings {
   targetScope: TargetScope;
-  presets: Presets;
   simpleFilters: string[]; // e.g., [".m3u8", ".pdf", "segment"]
   regexFilters: string[]; // e.g., ["/(master|index)\\.m3u8/i"]
   resourceTypes: string[]; // e.g., ["xmlhttprequest", "media", "image"]

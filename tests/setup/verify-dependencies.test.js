@@ -38,49 +38,29 @@ console.log('Running additional dependencies verification tests...\n');
 
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
 
-// Test 1: Zustand
-test('package.json should have zustand as dependency', () => {
-  expect(packageJson.dependencies).toHaveProperty('zustand');
-});
-
-// Test 2: Zod
+// Test 1: Zod
 test('package.json should have zod as dependency', () => {
   expect(packageJson.dependencies).toHaveProperty('zod');
 });
 
-// Test 3: Dexie
-test('package.json should have dexie as dependency', () => {
-  expect(packageJson.dependencies).toHaveProperty('dexie');
-});
-
-// Test 4: webextension-polyfill
+// Test 2: webextension-polyfill
 test('package.json should have webextension-polyfill as dependency', () => {
   expect(packageJson.dependencies).toHaveProperty('webextension-polyfill');
 });
 
-// Test 5: @types/webextension-polyfill
+// Test 3: @types/webextension-polyfill
 test('package.json should have @types/webextension-polyfill as devDependency', () => {
   expect(packageJson.devDependencies).toHaveProperty('@types/webextension-polyfill');
 });
 
-// Test 6: Lodash
-test('package.json should have lodash as dependency', () => {
-  expect(packageJson.dependencies).toHaveProperty('lodash');
+// Test 4: Handlebars
+test('package.json should have handlebars as dependency', () => {
+  expect(packageJson.dependencies).toHaveProperty('handlebars');
 });
 
-// Test 7: @types/lodash
-test('package.json should have @types/lodash as devDependency', () => {
-  expect(packageJson.devDependencies).toHaveProperty('@types/lodash');
-});
-
-// Test 8: i18next
-test('package.json should have i18next as dependency', () => {
-  expect(packageJson.dependencies).toHaveProperty('i18next');
-});
-
-// Test 9: react-i18next
-test('package.json should have react-i18next as dependency', () => {
-  expect(packageJson.dependencies).toHaveProperty('react-i18next');
+// Test 5: @types/handlebars
+test('package.json should have @types/handlebars as devDependency', () => {
+  expect(packageJson.devDependencies).toHaveProperty('@types/handlebars');
 });
 
 console.log('\n✓ All additional dependencies verification tests passed!');

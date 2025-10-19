@@ -4,99 +4,112 @@
  */
 
 /**
+ * Resource type configuration
+ */
+type ResourceTypeConfig = {
+  color: string;
+  badgeColor: string;
+  icon: string;
+  displayName: string;
+};
+
+/**
+ * Resource type configurations lookup table
+ * Reduces cyclomatic complexity by replacing switch statements with object lookup
+ */
+const RESOURCE_TYPE_CONFIG: Record<string, ResourceTypeConfig> = {
+  media: {
+    color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
+    badgeColor: 'bg-blue-100 text-blue-800',
+    icon: '🎬',
+    displayName: 'Media',
+  },
+  xmlhttprequest: {
+    color: 'bg-green-50 border-green-200 hover:bg-green-100',
+    badgeColor: 'bg-green-100 text-green-800',
+    icon: '📡',
+    displayName: 'XHR',
+  },
+  script: {
+    color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
+    badgeColor: 'bg-yellow-100 text-yellow-800',
+    icon: '📜',
+    displayName: 'JS',
+  },
+  stylesheet: {
+    color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
+    badgeColor: 'bg-purple-100 text-purple-800',
+    icon: '🎨',
+    displayName: 'CSS',
+  },
+  image: {
+    color: 'bg-pink-50 border-pink-200 hover:bg-pink-100',
+    badgeColor: 'bg-pink-100 text-pink-800',
+    icon: '🖼️',
+    displayName: 'Image',
+  },
+  font: {
+    color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
+    badgeColor: 'bg-indigo-100 text-indigo-800',
+    icon: '🔤',
+    displayName: 'Font',
+  },
+  document: {
+    color: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
+    badgeColor: 'bg-gray-100 text-gray-800',
+    icon: '📄',
+    displayName: 'Doc',
+  },
+};
+
+/**
+ * Default configuration for unknown resource types
+ */
+const DEFAULT_CONFIG: ResourceTypeConfig = {
+  color: 'bg-slate-50 border-slate-200 hover:bg-slate-100',
+  badgeColor: 'bg-slate-100 text-slate-800',
+  icon: '📦',
+  displayName: 'Unknown',
+};
+
+/**
+ * Get configuration for resource type
+ */
+function getConfig(type: string): ResourceTypeConfig {
+  return RESOURCE_TYPE_CONFIG[type] || DEFAULT_CONFIG;
+}
+
+/**
  * Get background color class for resource type
+ * Cyclomatic complexity: 1 (was 8)
  */
 export function getTypeColor(type: string): string {
-  switch (type) {
-    case 'media':
-      return 'bg-blue-50 border-blue-200 hover:bg-blue-100';
-    case 'xmlhttprequest':
-      return 'bg-green-50 border-green-200 hover:bg-green-100';
-    case 'script':
-      return 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100';
-    case 'stylesheet':
-      return 'bg-purple-50 border-purple-200 hover:bg-purple-100';
-    case 'image':
-      return 'bg-pink-50 border-pink-200 hover:bg-pink-100';
-    case 'font':
-      return 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100';
-    case 'document':
-      return 'bg-gray-50 border-gray-200 hover:bg-gray-100';
-    default:
-      return 'bg-slate-50 border-slate-200 hover:bg-slate-100';
-  }
+  return getConfig(type).color;
 }
 
 /**
  * Get badge color class for resource type
+ * Cyclomatic complexity: 1 (was 8)
  */
 export function getTypeBadgeColor(type: string): string {
-  switch (type) {
-    case 'media':
-      return 'bg-blue-100 text-blue-800';
-    case 'xmlhttprequest':
-      return 'bg-green-100 text-green-800';
-    case 'script':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'stylesheet':
-      return 'bg-purple-100 text-purple-800';
-    case 'image':
-      return 'bg-pink-100 text-pink-800';
-    case 'font':
-      return 'bg-indigo-100 text-indigo-800';
-    case 'document':
-      return 'bg-gray-100 text-gray-800';
-    default:
-      return 'bg-slate-100 text-slate-800';
-  }
+  return getConfig(type).badgeColor;
 }
 
 /**
  * Get emoji icon for resource type
+ * Cyclomatic complexity: 1 (was 8)
  */
 export function getTypeIcon(type: string): string {
-  switch (type) {
-    case 'media':
-      return '🎬';
-    case 'xmlhttprequest':
-      return '📡';
-    case 'script':
-      return '📜';
-    case 'stylesheet':
-      return '🎨';
-    case 'image':
-      return '🖼️';
-    case 'font':
-      return '🔤';
-    case 'document':
-      return '📄';
-    default:
-      return '📦';
-  }
+  return getConfig(type).icon;
 }
 
 /**
  * Get display name for resource type
+ * Cyclomatic complexity: 1 (was 8)
  */
 export function getTypeDisplayName(type: string): string {
-  switch (type) {
-    case 'xmlhttprequest':
-      return 'XHR';
-    case 'stylesheet':
-      return 'CSS';
-    case 'script':
-      return 'JS';
-    case 'media':
-      return 'Media';
-    case 'image':
-      return 'Image';
-    case 'font':
-      return 'Font';
-    case 'document':
-      return 'Doc';
-    default:
-      return type;
-  }
+  const config = getConfig(type);
+  return config.displayName === 'Unknown' ? type : config.displayName;
 }
 
 /**

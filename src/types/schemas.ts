@@ -10,12 +10,6 @@ import { STORAGE, EXPORT } from '@/lib/constants';
 // Settings Schemas
 // ========================================
 
-export const presetsSchema = z.object({
-  video: z.boolean(),
-  document: z.boolean(),
-  image: z.boolean(),
-});
-
 export const headerPolicySchema = z.object({
   basic: z.boolean(),
   sensitiveEnabled: z.boolean(),
@@ -74,7 +68,6 @@ export const customSelectorSchema = z.object({
 
 export const settingsSchema = z.object({
   targetScope: targetScopeSchema,
-  presets: presetsSchema,
   simpleFilters: z.array(z.string()),
   regexFilters: z.array(z.string()),
   resourceTypes: z.array(z.string()),
@@ -200,11 +193,6 @@ export const messageResponseSchema = z.object({
 
 export const defaultSettings: z.infer<typeof settingsSchema> = {
   targetScope: 'activeTab',
-  presets: {
-    video: false,
-    document: false,
-    image: false,
-  },
   simpleFilters: [],
   regexFilters: [],
   resourceTypes: [],

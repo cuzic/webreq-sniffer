@@ -3,6 +3,8 @@
  * Handles cookie collection and Netscape format generation for authenticated downloads
  */
 
+import { Logger } from './logger';
+
 /**
  * Cookie information from Chrome
  * Based on chrome.cookies.Cookie
@@ -40,7 +42,7 @@ export async function getCookiesForUrl(url: string): Promise<CookieInfo[]> {
       hostOnly: cookie.hostOnly,
     }));
   } catch (error) {
-    console.error('Failed to get cookies:', error);
+    Logger.error('cookie-manager', error, { url });
     return [];
   }
 }

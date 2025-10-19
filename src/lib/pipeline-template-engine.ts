@@ -5,6 +5,7 @@
 
 import { parseTemplate, type TemplateVariable } from './pipeline-template-parser';
 import { applyFilter } from './pipeline-template-filters';
+import { Logger } from './logger';
 
 export interface TemplateContext {
   // Page metadata
@@ -78,8 +79,10 @@ function evaluateVariable(variable: TemplateVariable, context: TemplateContext):
 function getVariableValue(name: string, context: TemplateContext): string {
   const value = context[name];
 
-  if (value === undefined) {
-    return 'undefined';
+  // Return empty string for undefined/null values
+  // Use the 'default' filter to provide fallback values if needed
+  if (value === undefined || value === null) {
+    return '';
   }
 
   return String(value);
@@ -102,7 +105,7 @@ export function safeEvaluateTemplate(
     return evaluateTemplate(template, context);
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error(`Template evaluation error for "${template}":`, error);
+      Logger.error('pipeline-template', error, { template, context: 'evaluation' });
     }
     return fallback;
   }

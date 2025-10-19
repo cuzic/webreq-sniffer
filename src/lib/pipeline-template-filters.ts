@@ -35,12 +35,15 @@ export const filters: Record<string, FilterFunction> = {
 
   /**
    * Convert to slug format (lowercase, replace spaces with dashes, remove special chars)
+   * Supports Unicode characters (e.g., Japanese, Chinese, etc.)
    */
   slugify: (value: string): string => {
     return value
       .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+      .replace(/\s+/g, '-') // Replace spaces with dashes
+      .replace(/[^\p{L}\p{N}-]/gu, '') // Keep letters, numbers, and dashes (Unicode-aware)
+      .replace(/-+/g, '-') // Collapse multiple dashes
+      .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
   },
 
   /**
@@ -93,6 +96,13 @@ export const filters: Record<string, FilterFunction> = {
    * Replace pattern with replacement
    */
   replace: (value: string, pattern: string | number, replacement: string | number): string => {
+    if (pattern === undefined || pattern === null) {
+      throw new Error('replace: pattern is required');
+    }
+    if (replacement === undefined || replacement === null) {
+      throw new Error('replace: replacement is required');
+    }
+
     const pat = String(pattern);
     const rep = String(replacement);
 
@@ -104,6 +114,10 @@ export const filters: Record<string, FilterFunction> = {
    * Remove pattern from string
    */
   remove: (value: string, pattern: string | number): string => {
+    if (pattern === undefined || pattern === null) {
+      throw new Error('remove: pattern is required');
+    }
+
     const pat = String(pattern);
     return value.split(pat).join('');
   },

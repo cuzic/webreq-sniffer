@@ -13,7 +13,7 @@ import {
   ExtensionContext,
 } from './helpers';
 
-describe('Extension E2E Tests', () => {
+describe.sequential('Extension E2E Tests', () => {
   let context: ExtensionContext;
 
   beforeAll(async () => {
@@ -119,9 +119,11 @@ describe('Extension E2E Tests', () => {
         );
       });
 
+      expect(tabs).toContain('Presets');
       expect(tabs).toContain('Filters');
-      expect(tabs).toContain('Collection Policy');
-      expect(tabs).toContain('Limits & Export');
+      expect(tabs).toContain('Collection');
+      expect(tabs).toContain('Limits');
+      expect(tabs).toContain('Export');
       expect(tabs).toContain('Advanced');
 
       await optionsPage.close();

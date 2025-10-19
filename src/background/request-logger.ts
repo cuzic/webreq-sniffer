@@ -33,7 +33,6 @@ export class RequestLogger {
 
     // Check for duplicates
     if (isDuplicate(entry.dedupeKey, logData.entries)) {
-      console.log('Duplicate entry skipped:', entry.url);
       return;
     }
 
@@ -45,7 +44,6 @@ export class RequestLogger {
     if (logData.entries.length > maxEntries) {
       const removeCount = logData.entries.length - maxEntries;
       logData.entries.splice(0, removeCount);
-      console.log(`Ring buffer: removed ${removeCount} oldest entries`);
     }
 
     // Update storage with complete log data

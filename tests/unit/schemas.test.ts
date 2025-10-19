@@ -277,7 +277,6 @@ describe('Schema Validation', () => {
   describe('Default Values', () => {
     it('defaultSettings should have all required fields', () => {
       expect(defaultSettings.targetScope).toBeDefined();
-      expect(defaultSettings.presets).toBeDefined();
       expect(defaultSettings.simpleFilters).toBeDefined();
       expect(defaultSettings.regexFilters).toBeDefined();
       expect(defaultSettings.resourceTypes).toBeDefined();

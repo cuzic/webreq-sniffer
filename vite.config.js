@@ -35,6 +35,11 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['./tests/setup/vitest.setup.js'],
     include: ['tests/unit/**/*.test.ts', 'tests/e2e/**/*.test.ts'],
+    // E2E tests run in node environment, unit tests in happy-dom
+    environmentMatchGlobs: [
+      ['tests/e2e/**', 'node'],
+      ['tests/unit/**', 'happy-dom'],
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

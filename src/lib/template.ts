@@ -4,6 +4,7 @@
  */
 
 import Handlebars from 'handlebars';
+import type { TemplateDelegate as HandlebarsTemplateDelegate } from 'handlebars';
 import type { LogEntry, EnrichedLogEntry } from '@/types';
 
 // Register helper functions
@@ -166,10 +167,29 @@ function enrichEntries(entries: LogEntry[]): EnrichedLogEntry[] {
 }
 
 /**
+ * Template cache to avoid recompiling the same template
+ */
+const templateCache = new Map<string, HandlebarsTemplateDelegate>();
+
+/**
+ * Clear the template cache (useful for testing or memory management)
+ */
+export function clearTemplateCache(): void {
+  templateCache.clear();
+}
+
+/**
  * Render a Handlebars template with log entries
  */
 export function renderTemplate(template: string, entries: LogEntry[]): string {
-  const compiled = Handlebars.compile(template);
+  // Check cache first
+  let compiled = templateCache.get(template);
+
+  if (!compiled) {
+    // Compile and cache
+    compiled = Handlebars.compile(template);
+    templateCache.set(template, compiled);
+  }
 
   const enrichedEntries = enrichEntries(entries);
 

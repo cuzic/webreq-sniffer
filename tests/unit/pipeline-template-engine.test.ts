@@ -62,7 +62,7 @@ describe('Pipeline Template Engine', () => {
 
     it('should handle undefined variables', () => {
       const result = evaluateTemplate('{unknownVar}', baseContext);
-      expect(result).toBe('undefined');
+      expect(result).toBe('');
     });
 
     it('should use default filter for undefined variables', () => {

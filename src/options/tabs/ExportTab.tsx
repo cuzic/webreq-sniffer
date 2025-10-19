@@ -16,6 +16,7 @@ import { CustomSelectorManager } from '../components/CustomSelectorManager';
 import { getAllTemplates } from '@/lib/builtinTemplates';
 import { getStatus } from '../messaging';
 import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Logger } from '@/lib/logger';
 
 interface ExportTabProps {
   settings: Settings;
@@ -43,7 +44,7 @@ export function ExportTab({ settings, onSettingsChange }: ExportTabProps) {
         const status = await getStatus();
         setPreviewEntries(status.entries);
       } catch (error) {
-        console.error('Failed to load entries:', error);
+        Logger.error('ExportTab', error, { context: 'loadEntries' });
         setPreviewEntries([]);
       } finally {
         setLoadingEntries(false);

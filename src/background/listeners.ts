@@ -7,6 +7,7 @@ import { getStateManager } from './storage';
 import { RequestLogger } from './request-logger';
 import { RequestProcessor } from './request-processor';
 import type { PageMetadata } from '@/types';
+import { Logger } from '@/lib/logger';
 
 // Global processor instance
 let processor: RequestProcessor | null = null;
@@ -70,26 +71,9 @@ export function handleBeforeRequest(
       // Process request with metadata
       await processor!.processRequest(details, undefined, pageMetadata);
     } catch (error) {
-      console.error('Error processing request:', error);
+      Logger.error('listeners', error, { url: details.url, type: details.type });
     }
   })();
-
-  return undefined;
-}
-
-/**
- * Handle request headers before they're sent
- * This is where we can capture headers if needed
- */
-export function handleBeforeSendHeaders(
-  details: chrome.webRequest.WebRequestDetails
-): chrome.webRequest.BlockingResponse | undefined {
-  // Check if monitoring is enabled - async check removed to match signature
-  // Headers will be added to the existing entry
-  // For now, we create entries in onBeforeRequest
-  // This listener can be used for header-specific logic later
-
-  console.log('Headers captured for:', details.url);
 
   return undefined;
 }
@@ -105,12 +89,4 @@ export function registerWebRequestListeners(): void {
     (details) => handleBeforeRequest(details as chrome.webRequest.WebRequestDetails),
     { urls: ['<all_urls>'] }
   );
-
-  chrome.webRequest.onBeforeSendHeaders.addListener(
-    (details) => handleBeforeSendHeaders(details as chrome.webRequest.WebRequestDetails),
-    { urls: ['<all_urls>'] },
-    ['requestHeaders', 'extraHeaders']
-  );
-
-  console.log('webRequest listeners registered');
 }

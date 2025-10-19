@@ -6,11 +6,10 @@
 import { initializeStorage } from './storage';
 import { handleMessage } from './messages';
 import { registerWebRequestListeners } from './listeners';
+import { stateEmitter } from '@/lib/state-change-emitter';
 
 // Import types for type checking
 import '@/types';
-
-console.log('WebreqSniffer Service Worker loaded');
 
 // ========================================
 // Installation and Setup
@@ -20,15 +19,9 @@ console.log('WebreqSniffer Service Worker loaded');
  * Initialize default settings on installation
  */
 chrome.runtime.onInstalled.addListener(async (details: chrome.runtime.InstalledDetails) => {
-  console.log('WebreqSniffer extension installed', details.reason);
-
   if (details.reason === 'install') {
     // First install: set default settings and log data
     await initializeStorage();
-    console.log('Default settings initialized');
-  } else if (details.reason === 'update') {
-    // Extension updated: migrate settings if needed
-    console.log('Extension updated');
   }
 });
 
@@ -50,4 +43,21 @@ chrome.runtime.onMessage.addListener(handleMessage);
  */
 registerWebRequestListeners();
 
-console.log('Service Worker initialized: all handlers registered');
+// ========================================
+// Storage Change Listener (Observer Pattern)
+// ========================================
+
+/**
+ * Listen for storage changes and emit events
+ * Enables real-time UI updates without polling
+ */
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  // Emit specific events based on what changed
+  if (areaName === 'local' && changes.logData) {
+    stateEmitter.emit('logData:changed');
+  }
+
+  if (areaName === 'sync' && changes.settings) {
+    stateEmitter.emit('settings:changed');
+  }
+});

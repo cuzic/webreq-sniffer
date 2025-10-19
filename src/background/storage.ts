@@ -94,5 +94,4 @@ export async function updateSettings(updates: Partial<Settings>): Promise<Settin
 export async function initializeStorage(): Promise<void> {
   await setSettings(defaultSettings);
   await setLogData(defaultLogData);
-  console.log('Storage initialized with defaults');
 }

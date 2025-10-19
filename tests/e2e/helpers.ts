@@ -2,11 +2,8 @@
  * E2E Test Helpers
  * Utilities for Puppeteer-based E2E testing
  *
- * IMPORTANT: Chrome extensions require headful mode (headless: false).
- * In CI/CD or headless environments, use xvfb-run to provide a virtual display.
- *
- * Example:
- *   xvfb-run --auto-servernum npm run test:e2e
+ * Chrome Manifest V3 extensions are supported in the new headless mode.
+ * Uses headless: "new" which works without X server.
  */
 
 import puppeteer, { Browser, Page } from 'puppeteer';
@@ -28,7 +25,7 @@ export interface ExtensionContext {
  */
 export async function launchBrowserWithExtension(): Promise<ExtensionContext> {
   const browser = await puppeteer.launch({
-    headless: false, // Extensions require headful mode (use xvfb-run in CI)
+    headless: 'new', // New headless mode supports extensions and doesn't require X server
     args: [
       `--disable-extensions-except=${distPath}`,
       `--load-extension=${distPath}`,

@@ -31,7 +31,8 @@ export class StateManager {
   async getSettings(forceRefresh = false): Promise<Settings> {
     if (!forceRefresh && this.settingsCache && this.isSettingsCacheValid()) {
       // Return a deep clone to prevent external mutations
-      return JSON.parse(JSON.stringify(this.settingsCache)) as Settings;
+      // Use structuredClone for better performance (Chrome 98+)
+      return structuredClone(this.settingsCache);
     }
 
     // Fetch from storage
@@ -39,7 +40,7 @@ export class StateManager {
     this.settingsCache = settings || defaultSettings;
     this.settingsCacheTimestamp = Date.now();
 
-    return JSON.parse(JSON.stringify(this.settingsCache)) as Settings;
+    return structuredClone(this.settingsCache);
   }
 
   /**
@@ -63,7 +64,8 @@ export class StateManager {
   async getLogData(forceRefresh = false): Promise<LogData> {
     if (!forceRefresh && this.logDataCache && this.isLogDataCacheValid()) {
       // Return a deep clone to prevent external mutations
-      return JSON.parse(JSON.stringify(this.logDataCache)) as LogData;
+      // Use structuredClone for better performance (Chrome 98+)
+      return structuredClone(this.logDataCache);
     }
 
     // Fetch from storage
@@ -71,7 +73,7 @@ export class StateManager {
     this.logDataCache = logData || defaultLogData;
     this.logDataCacheTimestamp = Date.now();
 
-    return JSON.parse(JSON.stringify(this.logDataCache)) as LogData;
+    return structuredClone(this.logDataCache);
   }
 
   /**
