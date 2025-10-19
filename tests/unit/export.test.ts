@@ -13,7 +13,7 @@ import {
   generatePowerShell,
   generateFilename,
   generateExportContent,
-} from '@/background/export';
+} from '@/lib/export';
 import type { LogEntry, ExportFormat } from '@/types';
 
 describe('Export Logic', () => {

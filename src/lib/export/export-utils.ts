@@ -1,31 +1,9 @@
 /**
- * Export Module
- * Handles log export to various script formats
- *
- * This file provides backward compatibility by re-exporting from @/lib/export
- * and includes utility functions for export format detection.
+ * Export Utilities
+ * Helper functions for export format detection
  */
 
 import type { LogEntry } from '@/types';
-
-// Re-export all public APIs from the export library
-export {
-  // Escapers
-  escapeShellArg,
-  escapePowerShellArg,
-  // Generators
-  generateUrlList,
-  generateBashCurl,
-  generateBashCurlHeaders,
-  generateBashYtDlp,
-  generateBashYtDlpWithCookies,
-  generatePowerShell,
-  // Filename generation
-  generateFilename,
-  // Orchestration
-  generateExportContent,
-  exportLogs,
-} from '@/lib/export';
 
 /**
  * Check if entries contain manifest with variants

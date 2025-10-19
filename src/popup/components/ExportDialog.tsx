@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { generateExportContent } from '@/background/export';
+import { generateExportContent } from '@/lib/export';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { EXPORT_PREVIEW } from '@/lib/constants';
 

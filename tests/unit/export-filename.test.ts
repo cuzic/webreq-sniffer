@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateFilename } from '@/background/export';
+import { generateFilename } from '@/lib/export';
 import type { LogEntry, ExportFormat } from '@/types';
 
 describe('generateFilename with Pipeline Templates', () => {

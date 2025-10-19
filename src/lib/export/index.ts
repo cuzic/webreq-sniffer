@@ -26,3 +26,6 @@ export { generateFilename } from './filename-generator';
 
 // Export orchestration - High-level export functions
 export { generateExportContent, exportLogs } from './export-orchestrator';
+
+// Utilities - Format detection and helpers
+export { hasManifestVariants, isManifestUrl } from './export-utils';

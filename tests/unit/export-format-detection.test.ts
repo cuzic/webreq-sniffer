@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import type { LogEntry } from '@/types';
-import { hasManifestVariants, isManifestUrl } from '@/background/export';
+import { hasManifestVariants, isManifestUrl } from '@/lib/export';
 
 /**
  * Helper: Create mock LogEntry

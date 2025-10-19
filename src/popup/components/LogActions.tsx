@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Download, Trash2 } from 'lucide-react';
 import { ExportDialog } from './ExportDialog';
-import { hasManifestVariants } from '@/background/export';
+import { hasManifestVariants } from '@/lib/export';
 
 interface LogActionsProps {
   entryCount: number;
