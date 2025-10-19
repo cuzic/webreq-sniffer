@@ -15,48 +15,49 @@ type ResourceTypeConfig = {
 
 /**
  * Resource type configurations lookup table
+ * Uses semantic colors from the color system for WCAG AA compliance
  * Reduces cyclomatic complexity by replacing switch statements with object lookup
  */
 const RESOURCE_TYPE_CONFIG: Record<string, ResourceTypeConfig> = {
   media: {
-    color: 'bg-blue-50 border-blue-200 hover:bg-blue-100',
-    badgeColor: 'bg-blue-100 text-blue-800',
+    color: 'bg-info/10 border-info/30 hover:bg-info/20',
+    badgeColor: 'bg-info/20 text-info-foreground',
     icon: '🎬',
     displayName: 'Media',
   },
   xmlhttprequest: {
-    color: 'bg-green-50 border-green-200 hover:bg-green-100',
-    badgeColor: 'bg-green-100 text-green-800',
+    color: 'bg-success/10 border-success/30 hover:bg-success/20',
+    badgeColor: 'bg-success/20 text-success-foreground',
     icon: '📡',
     displayName: 'XHR',
   },
   script: {
-    color: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100',
-    badgeColor: 'bg-yellow-100 text-yellow-800',
+    color: 'bg-warning/10 border-warning/30 hover:bg-warning/20',
+    badgeColor: 'bg-warning/20 text-warning-foreground',
     icon: '📜',
     displayName: 'JS',
   },
   stylesheet: {
-    color: 'bg-purple-50 border-purple-200 hover:bg-purple-100',
-    badgeColor: 'bg-purple-100 text-purple-800',
+    color: 'bg-accent/10 border-accent/30 hover:bg-accent/20',
+    badgeColor: 'bg-accent/20 text-accent-foreground',
     icon: '🎨',
     displayName: 'CSS',
   },
   image: {
-    color: 'bg-pink-50 border-pink-200 hover:bg-pink-100',
-    badgeColor: 'bg-pink-100 text-pink-800',
+    color: 'bg-secondary/10 border-secondary/30 hover:bg-secondary/20',
+    badgeColor: 'bg-secondary/20 text-secondary-foreground',
     icon: '🖼️',
     displayName: 'Image',
   },
   font: {
-    color: 'bg-indigo-50 border-indigo-200 hover:bg-indigo-100',
-    badgeColor: 'bg-indigo-100 text-indigo-800',
+    color: 'bg-primary/10 border-primary/30 hover:bg-primary/20',
+    badgeColor: 'bg-primary/20 text-primary-foreground',
     icon: '🔤',
     displayName: 'Font',
   },
   document: {
-    color: 'bg-gray-50 border-gray-200 hover:bg-gray-100',
-    badgeColor: 'bg-gray-100 text-gray-800',
+    color: 'bg-muted/10 border-muted/30 hover:bg-muted/20',
+    badgeColor: 'bg-muted/20 text-muted-foreground',
     icon: '📄',
     displayName: 'Doc',
   },
@@ -64,10 +65,11 @@ const RESOURCE_TYPE_CONFIG: Record<string, ResourceTypeConfig> = {
 
 /**
  * Default configuration for unknown resource types
+ * Uses muted colors for unknown types
  */
 const DEFAULT_CONFIG: ResourceTypeConfig = {
-  color: 'bg-slate-50 border-slate-200 hover:bg-slate-100',
-  badgeColor: 'bg-slate-100 text-slate-800',
+  color: 'bg-muted/10 border-muted/30 hover:bg-muted/20',
+  badgeColor: 'bg-muted/20 text-muted-foreground',
   icon: '📦',
   displayName: 'Unknown',
 };
