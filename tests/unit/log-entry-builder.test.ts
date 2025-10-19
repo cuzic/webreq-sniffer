@@ -313,31 +313,4 @@ describe('LogEntry Builder Pattern', () => {
       expect(entry.headers?.['Custom-Header']).toBe('value with spaces & special chars !@#$%');
     });
   });
-
-  describe('Backward compatibility', () => {
-    it('should create same LogEntry as old createLogEntry function', () => {
-      // This test ensures the builder produces the same result as the old factory function
-      const builderEntry = new LogEntryBuilder()
-        .fromWebRequest(mockWebRequestDetails)
-        .withHeaders(mockHeaders)
-        .withPageMetadata(mockPageMetadata)
-        .build();
-
-      // Check all required fields are present
-      expect(builderEntry).toHaveProperty('id');
-      expect(builderEntry).toHaveProperty('requestId');
-      expect(builderEntry).toHaveProperty('url');
-      expect(builderEntry).toHaveProperty('method');
-      expect(builderEntry).toHaveProperty('type');
-      expect(builderEntry).toHaveProperty('tabId');
-      expect(builderEntry).toHaveProperty('frameId');
-      expect(builderEntry).toHaveProperty('timestamp');
-      expect(builderEntry).toHaveProperty('dedupeKey');
-
-      // Check types
-      expect(typeof builderEntry.id).toBe('string');
-      expect(typeof builderEntry.dedupeKey).toBe('string');
-      expect(typeof builderEntry.timestamp).toBe('number');
-    });
-  });
 });

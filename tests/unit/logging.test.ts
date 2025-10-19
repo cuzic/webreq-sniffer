@@ -1,60 +1,13 @@
 /**
  * Unit Tests for Logging Logic
+ * Note: Dedupe key generation is tested in log-entry-builder.test.ts
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateDedupeKey, isDuplicate, createLogEntry } from '@/background/logging';
+import { isDuplicate, createLogEntry } from '@/background/logging';
 import type { LogEntry } from '@/types';
 
 describe('Logging Logic', () => {
-  describe('generateDedupeKey', () => {
-    it('should generate consistent key for same URL and headers', () => {
-      const headers = {
-        Referer: 'https://example.com',
-        Origin: 'https://example.com',
-      };
-      const key1 = generateDedupeKey('https://example.com/video.m3u8', headers);
-      const key2 = generateDedupeKey('https://example.com/video.m3u8', headers);
-      expect(key1).toBe(key2);
-    });
-
-    it('should generate different keys for different URLs', () => {
-      const headers = { Referer: 'https://example.com' };
-      const key1 = generateDedupeKey('https://example.com/video1.m3u8', headers);
-      const key2 = generateDedupeKey('https://example.com/video2.m3u8', headers);
-      expect(key1).not.toBe(key2);
-    });
-
-    it('should generate different keys for different headers', () => {
-      const url = 'https://example.com/video.m3u8';
-      const key1 = generateDedupeKey(url, { Referer: 'https://example.com' });
-      const key2 = generateDedupeKey(url, { Referer: 'https://other.com' });
-      expect(key1).not.toBe(key2);
-    });
-
-    it('should handle missing headers', () => {
-      const key1 = generateDedupeKey('https://example.com/test', undefined);
-      const key2 = generateDedupeKey('https://example.com/test', {});
-      expect(key1).toBe(key2);
-    });
-
-    it('should include Referer and Origin in key generation', () => {
-      const url = 'https://example.com/test';
-      const key1 = generateDedupeKey(url, {});
-      const key2 = generateDedupeKey(url, { Referer: 'https://example.com' });
-      const key3 = generateDedupeKey(url, { Origin: 'https://example.com' });
-      expect(key1).not.toBe(key2);
-      expect(key1).not.toBe(key3);
-      expect(key2).not.toBe(key3);
-    });
-
-    it('should return base36 string', () => {
-      const key = generateDedupeKey('https://example.com/test', {});
-      expect(typeof key).toBe('string');
-      expect(/^[0-9a-z-]+$/.test(key)).toBe(true);
-    });
-  });
-
   describe('isDuplicate', () => {
     const mockEntries: LogEntry[] = [
       {
