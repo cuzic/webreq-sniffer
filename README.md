@@ -236,8 +236,8 @@ npm run format
 
 All tests pass with TDD methodology:
 
-- **524 tests** covering all components
-  - Unit tests (511 tests): business logic, design patterns, utilities
+- **749 tests** covering all components
+  - Unit tests (736 tests): business logic, design patterns, utilities
   - E2E tests (13 tests): extension functionality, UI interactions
 - Design pattern implementations with comprehensive test coverage
 - Type validation tests
@@ -369,7 +369,7 @@ This extension requires the following permissions:
   - [x] Chain of Responsibility (Request pipeline)
   - [x] Builder Pattern (LogEntry construction)
   - [x] Template Method (Script generators)
-- [x] Comprehensive testing (524 tests, all passing)
+- [x] Comprehensive testing (749 tests, all passing)
 - [x] TDD methodology for all patterns
 - [x] Class-based architecture with dependency injection
 - [x] Type-safe discriminated unions for messages
@@ -383,6 +383,29 @@ This extension requires the following permissions:
 - [x] Observer Pattern replaced 1-second polling
 - [x] Code reduction: -330+ lines across multiple files
 - [x] Cyclomatic complexity reduction: 4 → 1 in critical paths
+
+**Smart Manifest Handling (TDD Implementation):**
+
+- [x] Duplicate Request Detection:
+  - [x] URL-based and URL+method strategies
+  - [x] Toggle duplicate view with UI controls
+  - [x] 14 comprehensive tests
+- [x] Master Playlist Detection:
+  - [x] Pattern-based detection for HLS/DASH
+  - [x] Filename and content heuristics
+  - [x] 21 tests covering detection logic
+- [x] Smart Manifest Filtering:
+  - [x] Groups entries by base URL
+  - [x] Filters media playlists when master exists
+  - [x] 23 tests for filtering logic
+- [x] Persistent Filter State:
+  - [x] Chrome storage-based persistence
+  - [x] Auto-save/load on mount
+  - [x] 11 tests with error handling
+- [x] Manifest Metadata Viewer Dialog:
+  - [x] Displays HLS/DASH metadata (resolution, bitrate, codecs, FPS)
+  - [x] Parses variants from master playlists
+  - [x] 20 UI tests with React Testing Library
 
 ### Planned 🚀
 
