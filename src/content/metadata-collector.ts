@@ -5,6 +5,7 @@
 
 import type { PageMetadata, CustomSelector } from '@/types';
 import { fetchAndParseManifest, detectManifestType } from '@/lib/manifest-parser';
+import { Logger } from '@/lib/logger';
 
 /**
  * Collect page metadata from the current document
@@ -63,7 +64,7 @@ export async function collectPageMetadata(
         metadata.manifestMetadata = manifestMetadata;
       }
     } catch (error) {
-      console.warn('Failed to fetch/parse manifest:', error);
+      Logger.warn('metadata-collector', 'Failed to fetch/parse manifest', { error, manifestUrl });
     }
   }
 
@@ -146,7 +147,9 @@ function extractValue(selector: string, attribute?: string): string | undefined 
     }
   } catch (error) {
     // Invalid selector or other error
-    console.warn(`Failed to extract value with selector "${selector}":`, error);
+    Logger.warn('metadata-collector', `Failed to extract value with selector "${selector}"`, {
+      error,
+    });
     return undefined;
   }
 }

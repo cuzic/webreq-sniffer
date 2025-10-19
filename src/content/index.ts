@@ -5,6 +5,7 @@
 
 import { collectPageMetadata } from './metadata-collector';
 import type { CustomSelector } from '@/types';
+import { Logger } from '@/lib/logger';
 
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -18,7 +19,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const metadata = await collectPageMetadata(customSelectors);
         sendResponse({ metadata });
       } catch (error) {
-        console.error('Error collecting page metadata:', error);
+        Logger.error('content-script', error, { context: 'collectMetadata' });
         sendResponse({ metadata: null, error: String(error) });
       }
     })();
@@ -29,5 +30,5 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // Log that content script has loaded (for debugging)
 if (process.env.NODE_ENV === 'development') {
-  console.log('[WebreqSniffer] Content script loaded');
+  Logger.info('content-script', '[WebreqSniffer] Content script loaded', {});
 }
