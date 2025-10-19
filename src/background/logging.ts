@@ -1,10 +1,9 @@
 /**
  * Logging Module
- * Handles log entry creation and storage
+ * Handles log entry creation and deduplication
  */
 
-import type { LogEntry, Settings, PageMetadata } from '@/types';
-import { getLogData, setLogData } from './storage';
+import type { LogEntry, PageMetadata } from '@/types';
 
 /**
  * Generate a unique ID for log entry
@@ -74,30 +73,4 @@ export function createLogEntry(
     dedupeKey,
     pageMetadata,
   };
-}
-
-/**
- * Add entry to log data with ring buffer management
- */
-export async function addLogEntry(entry: LogEntry, settings: Settings): Promise<void> {
-  const logData = await getLogData();
-
-  // Check for duplicates
-  if (isDuplicate(entry.dedupeKey, logData.entries)) {
-    console.log('Duplicate entry skipped:', entry.url);
-    return;
-  }
-
-  // Add new entry
-  logData.entries.push(entry);
-
-  // Ring buffer: remove oldest if over limit
-  const maxEntries = settings.limits.maxEntries;
-  if (logData.entries.length > maxEntries) {
-    const removeCount = logData.entries.length - maxEntries;
-    logData.entries.splice(0, removeCount);
-    console.log(`Ring buffer: removed ${removeCount} oldest entries`);
-  }
-
-  await setLogData(logData);
 }
