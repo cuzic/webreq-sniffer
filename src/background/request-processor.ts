@@ -1,12 +1,12 @@
 /**
  * RequestProcessor Class
- * Coordinates request processing by delegating to filter and logger
+ * Coordinates request processing by delegating to filtering and logging
  */
 
 import type { StateManager } from './state-manager';
-import type { RequestFilter } from './request-filter';
 import type { RequestLogger } from './request-logger';
-import type { Settings, PageMetadata } from '@/types';
+import type { PageMetadata } from '@/types';
+import { shouldLogRequest } from './filtering';
 
 /**
  * RequestProcessor coordinates the request handling workflow
@@ -15,7 +15,6 @@ import type { Settings, PageMetadata } from '@/types';
 export class RequestProcessor {
   constructor(
     private stateManager: StateManager,
-    private filter: RequestFilter,
     private logger: RequestLogger
   ) {}
 
@@ -37,7 +36,8 @@ export class RequestProcessor {
       }
 
       // Step 2: Apply filtering logic
-      if (!this.filter.shouldLog(details.url, details.type)) {
+      const settings = await this.stateManager.getSettings();
+      if (!shouldLogRequest(details.url, details.type, settings)) {
         return;
       }
 
@@ -70,13 +70,5 @@ export class RequestProcessor {
 
     // All tabs
     return true;
-  }
-
-  /**
-   * Update filter with new settings
-   * @param settings New settings
-   */
-  updateFilter(settings: Settings): void {
-    this.filter.updateSettings(settings);
   }
 }

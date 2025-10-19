@@ -5,7 +5,6 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { RequestProcessor } from '@/background/request-processor';
-import { RequestFilter } from '@/background/request-filter';
 import { RequestLogger } from '@/background/request-logger';
 import { MockStorageAdapter } from '@/lib/adapters/storage-adapter';
 import { StateManager } from '@/background/state-manager';
@@ -15,7 +14,6 @@ import type { Settings, LogData } from '@/types';
 describe('RequestProcessor', () => {
   let processor: RequestProcessor;
   let stateManager: StateManager;
-  let filter: RequestFilter;
   let logger: RequestLogger;
   let mockLocalAdapter: MockStorageAdapter;
   let mockSyncAdapter: MockStorageAdapter;
@@ -35,9 +33,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -67,9 +64,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -99,9 +95,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -130,9 +125,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -165,9 +159,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', settings);
 
-      filter = new RequestFilter(settings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -200,9 +193,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', settings);
 
-      filter = new RequestFilter(settings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -231,9 +223,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       // Force an error
       vi.spyOn(logger, 'logRequest').mockRejectedValue(new Error('Storage error'));
@@ -267,9 +258,8 @@ describe('RequestProcessor', () => {
       await mockLocalAdapter.set('logData', logData);
       await mockSyncAdapter.set('settings', defaultSettings);
 
-      filter = new RequestFilter(defaultSettings);
       logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
+      processor = new RequestProcessor(stateManager, logger);
 
       const logSpy = vi.spyOn(logger, 'logRequest');
 
@@ -291,49 +281,6 @@ describe('RequestProcessor', () => {
       await processor.processRequest(details, headers);
 
       expect(logSpy).toHaveBeenCalledWith(details, headers, undefined);
-    });
-  });
-
-  describe('updateFilter', () => {
-    it('should update filter with new settings', async () => {
-      await mockLocalAdapter.set('logData', {
-        ...defaultLogData,
-        isMonitoring: true,
-        monitoringScope: 'allTabs',
-      });
-      await mockSyncAdapter.set('settings', defaultSettings);
-
-      filter = new RequestFilter(defaultSettings);
-      logger = new RequestLogger(stateManager);
-      processor = new RequestProcessor(stateManager, filter, logger);
-
-      const logSpy = vi.spyOn(logger, 'logRequest');
-
-      const details = {
-        requestId: 'req-123',
-        url: 'https://example.com/video.mp4',
-        method: 'GET',
-        type: 'media',
-        tabId: 1,
-        frameId: 0,
-        timeStamp: Date.now(),
-        initiator: 'https://example.com',
-      } as chrome.webRequest.WebRequestDetails;
-
-      // Initially no filters, should log
-      await processor.processRequest(details);
-      expect(logSpy).toHaveBeenCalledTimes(1);
-
-      // Update filter
-      const newSettings: Settings = {
-        ...defaultSettings,
-        simpleFilters: ['.webm'], // Only .webm now
-      };
-      processor.updateFilter(newSettings);
-
-      // Should not log .mp4 anymore
-      await processor.processRequest(details);
-      expect(logSpy).toHaveBeenCalledTimes(1); // Still 1, not called again
     });
   });
 });

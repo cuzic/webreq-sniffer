@@ -4,10 +4,8 @@
  */
 
 import { getStateManager } from './storage';
-import { RequestFilter } from './request-filter';
 import { RequestLogger } from './request-logger';
 import { RequestProcessor } from './request-processor';
-import { defaultSettings } from '@/types';
 import type { PageMetadata } from '@/types';
 
 // Global processor instance
@@ -20,14 +18,8 @@ function initializeProcessor(): void {
   if (processor) return;
 
   const stateManager = getStateManager();
-  const filter = new RequestFilter(defaultSettings); // Use default settings initially
   const logger = new RequestLogger(stateManager);
-  processor = new RequestProcessor(stateManager, filter, logger);
-
-  // Initialize filter with current settings
-  stateManager.getSettings().then((settings) => {
-    processor?.updateFilter(settings);
-  });
+  processor = new RequestProcessor(stateManager, logger);
 }
 
 /**
