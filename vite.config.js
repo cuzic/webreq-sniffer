@@ -14,6 +14,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    sourcemap: true,
     rollupOptions: {
       output: {
         // Ensure consistent chunk names for better caching

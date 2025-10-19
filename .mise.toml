@@ -1,2 +1,31 @@
 [tools]
 node = "24.5.0"
+
+[tasks]
+# Development
+dev = "npm run dev"
+preview = "npm run preview"
+
+# Build & Package
+build = "npm run build"
+pack = "npm run package:zip"
+release = ["build", "pack"]
+
+# Testing
+test = "npm test"
+"test:unit" = "npm run test:unit"
+"test:unit:watch" = "npm run test:unit:watch"
+"test:unit:ui" = "npm run test:unit:ui"
+"test:coverage" = "npm run test:coverage"
+"test:e2e" = "npm run test:e2e"
+
+# Code Quality
+lint = "npm run lint"
+format = "npm run format"
+typecheck = "npx tsc --noEmit"
+
+# Asset Generation
+icons = "npm run icons"
+screenshots = "npm run screenshots"
+promo = "npm run promo"
+assets = "npm run assets"

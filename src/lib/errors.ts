@@ -21,7 +21,7 @@ export class WebreqSnifferError extends Error {
       const ErrorConstructor = Error as typeof Error & {
         captureStackTrace(targetObject: object, constructorOpt?: new (...args: any[]) => any): void;
       };
-      ErrorConstructor.captureStackTrace(this, this.constructor);
+      ErrorConstructor.captureStackTrace(this, WebreqSnifferError);
     }
   }
 }
