@@ -29,7 +29,7 @@ export function MonitoringControl({
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <div
-            className={`h-3 w-3 rounded-full ${isMonitoring ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}
+            className={`h-3 w-3 rounded-full ${isMonitoring ? 'bg-success animate-pulse' : 'bg-muted'}`}
           />
           <span className="font-medium">{isMonitoring ? '監視中' : '停止中'}</span>
         </div>
