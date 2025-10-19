@@ -52,16 +52,16 @@ export function FilterPreview({ result, loading, error }: FilterPreviewProps) {
   const hasMatches = result.matched > 0;
 
   return (
-    <Card className={hasMatches ? 'border-green-500/50 bg-green-50/50' : 'border-muted'}>
+    <Card className={hasMatches ? 'border-success/50 bg-success/10' : 'border-muted'}>
       <CardContent className="pt-6">
         {/* Match Summary */}
         <div className="flex items-start gap-2 mb-3">
           <CheckCircle2
-            className={`h-5 w-5 flex-shrink-0 mt-0.5 ${hasMatches ? 'text-green-600' : 'text-muted-foreground'}`}
+            className={`h-5 w-5 flex-shrink-0 mt-0.5 ${hasMatches ? 'text-success' : 'text-muted-foreground'}`}
           />
           <div className="flex-1">
             <p
-              className={`text-sm font-medium ${hasMatches ? 'text-green-700' : 'text-muted-foreground'}`}
+              className={`text-sm font-medium ${hasMatches ? 'text-success' : 'text-muted-foreground'}`}
             >
               プレビュー: {result.matched}件マッチ
               {result.total > 0 && (
@@ -87,7 +87,7 @@ export function FilterPreview({ result, loading, error }: FilterPreviewProps) {
 
                     return (
                       <div key={index} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-3 w-3 text-green-600 flex-shrink-0 mt-0.5" />
+                        <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0 mt-0.5" />
                         <p className="text-xs font-mono text-muted-foreground break-all">
                           {displayUrl}
                         </p>
