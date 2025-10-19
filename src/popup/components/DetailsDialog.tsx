@@ -74,24 +74,28 @@ export function DetailsDialog({ entry, open, onOpenChange }: DetailsDialogProps)
             </div>
 
             {/* Request Headers */}
-            {entry.requestHeaders && entry.requestHeaders.length > 0 && (
+            {entry.requestHeaders && Object.keys(entry.requestHeaders).length > 0 && (
               <div>
                 <Label className="text-xs text-muted-foreground">Request Headers</Label>
                 <ScrollArea className="h-[200px] mt-1">
                   <pre className="text-xs bg-muted p-3 rounded font-mono">
-                    {entry.requestHeaders.map((h) => `${h.name}: ${h.value}`).join('\n')}
+                    {Object.entries(entry.requestHeaders)
+                      .map(([name, value]: [string, string]) => `${name}: ${value}`)
+                      .join('\n')}
                   </pre>
                 </ScrollArea>
               </div>
             )}
 
             {/* Response Headers */}
-            {entry.responseHeaders && entry.responseHeaders.length > 0 && (
+            {entry.headers && Object.keys(entry.headers).length > 0 && (
               <div>
                 <Label className="text-xs text-muted-foreground">Response Headers</Label>
                 <ScrollArea className="h-[200px] mt-1">
                   <pre className="text-xs bg-muted p-3 rounded font-mono">
-                    {entry.responseHeaders.map((h) => `${h.name}: ${h.value}`).join('\n')}
+                    {Object.entries(entry.headers)
+                      .map(([name, value]: [string, string]) => `${name}: ${value}`)
+                      .join('\n')}
                   </pre>
                 </ScrollArea>
               </div>

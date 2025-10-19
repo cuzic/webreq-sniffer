@@ -46,7 +46,11 @@ Handlebars.registerHelper('urlEncode', (str: string) => {
 });
 
 Handlebars.registerHelper('base64', (str: string) => {
-  return Buffer.from(str).toString('base64');
+  // Browser-compatible base64 encoding
+  // Use TextEncoder for proper UTF-8 handling
+  const bytes = new TextEncoder().encode(str);
+  const binString = Array.from(bytes, (byte) => String.fromCodePoint(byte)).join('');
+  return btoa(binString);
 });
 
 Handlebars.registerHelper('json', (obj: unknown) => {

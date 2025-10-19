@@ -22,6 +22,7 @@ export function parseHLSManifest(content: string): ManifestMetadata | null {
     // Extract metadata and stream variants from HLS tags
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      if (!line) continue; // Skip if line is undefined
 
       // #EXT-X-TITLE (non-standard but sometimes used)
       if (line.startsWith('#EXT-X-TITLE:')) {
@@ -43,7 +44,8 @@ export function parseHLSManifest(content: string): ManifestMetadata | null {
 
       // #EXT-X-STREAM-INF (stream variants for master playlists)
       if (line.startsWith('#EXT-X-STREAM-INF:')) {
-        const variant = parseHLSStreamInf(line, lines[i + 1]);
+        const nextLine = i + 1 < lines.length ? lines[i + 1] : undefined;
+        const variant = parseHLSStreamInf(line, nextLine);
         if (variant) {
           variants.push(variant);
         }
@@ -83,6 +85,7 @@ function extractSegmentPattern(urls: string[]): string | undefined {
 
   // Take first URL as base
   const firstUrl = urls[0];
+  if (!firstUrl) return undefined; // Handle potentially undefined array access
 
   // Simple pattern: replace numbers with *
   const pattern = firstUrl.replace(/\d+/g, '*');
@@ -111,29 +114,32 @@ function parseHLSStreamInf(
 
   // Parse BANDWIDTH
   const bandwidthMatch = attributesStr.match(/BANDWIDTH=(\d+)/);
-  if (bandwidthMatch) {
+  if (bandwidthMatch && bandwidthMatch[1]) {
     variant.bandwidth = parseInt(bandwidthMatch[1], 10);
   }
 
   // Parse RESOLUTION
   const resolutionMatch = attributesStr.match(/RESOLUTION=(\d+x\d+)/);
-  if (resolutionMatch) {
+  if (resolutionMatch && resolutionMatch[1]) {
     variant.resolution = resolutionMatch[1];
 
     // Generate label from resolution
-    const height = parseInt(resolutionMatch[1].split('x')[1], 10);
-    variant.label = `${height}p`;
+    const heightStr = resolutionMatch[1].split('x')[1];
+    if (heightStr) {
+      const height = parseInt(heightStr, 10);
+      variant.label = `${height}p`;
+    }
   }
 
   // Parse CODECS
   const codecsMatch = attributesStr.match(/CODECS="([^"]+)"/);
-  if (codecsMatch) {
+  if (codecsMatch && codecsMatch[1]) {
     variant.codecs = codecsMatch[1];
   }
 
   // Parse FRAME-RATE
   const frameRateMatch = attributesStr.match(/FRAME-RATE=([\d.]+)/);
-  if (frameRateMatch) {
+  if (frameRateMatch && frameRateMatch[1]) {
     variant.frameRate = parseFloat(frameRateMatch[1]);
   }
 

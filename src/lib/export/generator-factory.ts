@@ -52,7 +52,11 @@ export class BashBatchDownloadGenerator implements IExportGenerator {
     if (entries.length === 0) {
       throw new ExportError('No entries to export', { format: 'bash-batch-download' });
     }
-    return generateBashBatchDownload(entries[0]);
+    const firstEntry = entries[0];
+    if (!firstEntry) {
+      throw new ExportError('No entries to export', { format: 'bash-batch-download' });
+    }
+    return generateBashBatchDownload(firstEntry);
   }
 }
 
@@ -69,7 +73,11 @@ export class PowerShellBatchDownloadGenerator implements IExportGenerator {
     if (entries.length === 0) {
       throw new ExportError('No entries to export', { format: 'powershell-batch-download' });
     }
-    return generatePowerShellBatchDownload(entries[0]);
+    const firstEntry = entries[0];
+    if (!firstEntry) {
+      throw new ExportError('No entries to export', { format: 'powershell-batch-download' });
+    }
+    return generatePowerShellBatchDownload(firstEntry);
   }
 }
 

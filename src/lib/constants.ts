@@ -62,6 +62,8 @@ export const UI = {
   LOG_LIST_HEIGHT: 300,
   /** Details dialog max width */
   DETAILS_DIALOG_WIDTH: '3xl',
+  /** Toast notification duration in milliseconds */
+  TOAST_DURATION: 2000,
 } as const;
 
 // ============================================================================

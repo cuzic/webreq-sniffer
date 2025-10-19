@@ -104,7 +104,7 @@ export function safeEvaluateTemplate(
   try {
     return evaluateTemplate(template, context);
   } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       Logger.error('pipeline-template', error, { template, context: 'evaluation' });
     }
     return fallback;

@@ -9,7 +9,7 @@ export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
  * Logger configuration
  */
 const config = {
-  enabled: process.env.NODE_ENV === 'development',
+  enabled: import.meta.env.DEV,
   minLevel: 'error' as LogLevel,
 };
 

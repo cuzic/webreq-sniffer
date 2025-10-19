@@ -5,7 +5,6 @@
 
 // Export all TypeScript types
 export type {
-  Presets,
   HeaderPolicy,
   Limits,
   Newline,
@@ -28,6 +27,7 @@ export type {
   ExportOptions,
   ExportTemplate,
   EnrichedLogEntry,
+  PreviewResult,
   MessageType,
   Message,
   MessageResponse,
@@ -38,7 +38,6 @@ export type { EntryActions, SelectionActions } from './actions';
 
 // Export all Zod schemas
 export {
-  presetsSchema,
   headerPolicySchema,
   limitsSchema,
   newlineSchema,

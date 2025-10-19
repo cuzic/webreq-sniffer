@@ -46,15 +46,19 @@ export function generateYtDlpCommand(entry: LogEntry): string {
   let command = `yt-dlp ${url}`;
 
   // Add referer if available
-  if (entry.requestHeaders?.referer || entry.requestHeaders?.Referer) {
+  if (entry.requestHeaders) {
     const referer = entry.requestHeaders.referer || entry.requestHeaders.Referer;
-    command += ` --referer ${escapeShellArg(referer)}`;
+    if (referer) {
+      command += ` --referer ${escapeShellArg(referer)}`;
+    }
   }
 
   // Add user-agent if available
-  if (entry.requestHeaders?.['user-agent'] || entry.requestHeaders?.['User-Agent']) {
+  if (entry.requestHeaders) {
     const userAgent = entry.requestHeaders['user-agent'] || entry.requestHeaders['User-Agent'];
-    command += ` --user-agent ${escapeShellArg(userAgent)}`;
+    if (userAgent) {
+      command += ` --user-agent ${escapeShellArg(userAgent)}`;
+    }
   }
 
   return command;

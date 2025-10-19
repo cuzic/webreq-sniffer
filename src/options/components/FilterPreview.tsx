@@ -75,7 +75,7 @@ export function FilterPreview({ result, loading, error }: FilterPreviewProps) {
             {result.samples.length > 0 && (
               <ScrollArea className="h-[120px] mt-2">
                 <div className="space-y-1">
-                  {result.samples.map((url, index) => {
+                  {result.samples.map((url: string, index: number) => {
                     // Extract just the path for display
                     let displayUrl = url;
                     try {
