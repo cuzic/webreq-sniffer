@@ -3,8 +3,8 @@
  * User interface for WebreqSniffer extension
  */
 
-import { useState, useMemo } from 'react';
-import type { ExportFormat, LogEntry } from '@/types';
+import { useState, useMemo, useEffect } from 'react';
+import type { ExportFormat, LogEntry, Settings as SettingsType } from '@/types';
 import { exportLogs, openOptionsPage } from './messaging';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,12 +13,15 @@ import { MonitoringControl } from './components/MonitoringControl';
 import { LogActions } from './components/LogActions';
 import { SearchBar } from './components/SearchBar';
 import { FilterDropdown } from './components/FilterDropdown';
+import { QuickFilters } from './components/QuickFilters';
 import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
 import { Toaster } from '@/components/ui/sonner';
 import { useMonitoring } from './hooks/useMonitoring';
 import { useSelection } from './hooks/useSelection';
 import { useEntryActions } from './hooks/useEntryActions';
+import { applyPreset } from '@/lib/filter-presets';
+import { defaultSettings } from '@/types/schemas';
 import { Logger } from '@/lib/logger';
 
 export function Popup() {
@@ -26,11 +29,45 @@ export function Popup() {
   const [filterType, setFilterType] = useState<string>('all');
   const [detailsEntry, setDetailsEntry] = useState<LogEntry | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [settings, setSettings] = useState<SettingsType>(defaultSettings);
 
   // Custom hooks
   const monitoring = useMonitoring();
   const selection = useSelection(monitoring.status.entries);
   const entryActionsHook = useEntryActions(setDetailsEntry, setShowDetailsDialog);
+
+  // Load settings on mount
+  useEffect(() => {
+    chrome.storage.sync.get(['settings'], (result) => {
+      if (result.settings) {
+        setSettings(result.settings);
+      }
+    });
+  }, []);
+
+  // Apply preset handler
+  function handleApplyPreset(presetId: string) {
+    try {
+      const newSettings = applyPreset(presetId, settings);
+      setSettings(newSettings);
+
+      // Map preset to simple filterType for existing UI
+      if (presetId === 'all') {
+        setFilterType('all');
+        setSearchTerm('');
+      } else if (presetId === 'video') {
+        setFilterType('media');
+      } else if (presetId === 'images') {
+        setFilterType('image');
+      } else if (presetId === 'api') {
+        setFilterType('xmlhttprequest');
+      } else if (presetId === 'documents') {
+        setFilterType('other');
+      }
+    } catch (error) {
+      Logger.error('Popup', error, { presetId, context: 'applyPreset' });
+    }
+  }
 
   // Filter entries based on search term and filter type
   const filteredEntries = useMemo(() => {
@@ -116,6 +153,9 @@ export function Popup() {
             <CardDescription>キャプチャされたリクエストの一覧</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            {/* Quick Filters */}
+            <QuickFilters settings={settings} onApplyPreset={handleApplyPreset} />
+
             {/* Search and Filter */}
             <div className="flex gap-2">
               <div className="flex-1">
