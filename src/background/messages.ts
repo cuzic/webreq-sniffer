@@ -6,7 +6,8 @@
 import type { Message, MessageResponse, LogEntry } from '@/types';
 import { getLogData, getSettings, updateLogData, updateSettings } from './storage';
 import { updateBadge } from './badge';
-import { exportLogs } from './export';
+import { exportLogs } from '@/lib/export';
+import { Logger } from '@/lib/logger';
 
 /**
  * Start monitoring network requests
@@ -22,8 +23,6 @@ export async function startMonitoring(
   });
 
   await updateBadge(true);
-
-  console.log('Monitoring started', { scope, activeTabId });
 }
 
 /**
@@ -36,8 +35,6 @@ export async function stopMonitoring(): Promise<void> {
 
   await updateLogData(logData);
   await updateBadge(false);
-
-  console.log('Monitoring stopped');
 }
 
 /**
@@ -66,92 +63,98 @@ export async function getStatus(): Promise<{
  */
 export async function clearLogs(): Promise<void> {
   await updateLogData({ entries: [] });
-  console.log('Logs cleared');
 }
 
 /**
+ * Message handler function type
+ */
+type MessageHandler = (
+  message: Message,
+  sender: chrome.runtime.MessageSender
+) => Promise<MessageResponse>;
+
+/**
+ * Message handlers map (reduces cyclomatic complexity)
+ * Each handler is responsible for processing one message type
+ */
+const messageHandlers: Record<Message['type'], MessageHandler> = {
+  'start-monitoring': async (message) => {
+    if (message.type !== 'start-monitoring') throw new Error('Invalid message type');
+    const { scope, activeTabId } = message.payload;
+    await startMonitoring(scope, activeTabId);
+    return { success: true };
+  },
+
+  'stop-monitoring': async () => {
+    await stopMonitoring();
+    return { success: true };
+  },
+
+  'get-status': async () => {
+    const status = await getStatus();
+    return { success: true, data: status };
+  },
+
+  'clear-logs': async () => {
+    await clearLogs();
+    return { success: true };
+  },
+
+  'get-settings': async () => {
+    const settings = await getSettings();
+    return { success: true, data: settings };
+  },
+
+  'update-settings': async (message) => {
+    if (message.type !== 'update-settings') throw new Error('Invalid message type');
+    const newSettings = message.payload;
+    await updateSettings(newSettings);
+    return { success: true };
+  },
+
+  'export-logs': async (message) => {
+    if (message.type !== 'export-logs') throw new Error('Invalid message type');
+    const { format, selectedIds } = message.payload;
+    const logData = await getLogData();
+    const settings = await getSettings();
+
+    // Filter entries if selectedIds is provided
+    const entriesToExport = selectedIds
+      ? logData.entries.filter((entry) => selectedIds.includes(entry.id))
+      : logData.entries;
+
+    const filename = await exportLogs(entriesToExport, format, settings.exportSettings);
+
+    return { success: true, data: { filename } };
+  },
+};
+
+/**
  * Handle runtime messages
- * Type-safe message handling with discriminated unions
+ * Type-safe message handling with handler map pattern
+ * Cyclomatic complexity: 2 (was 8)
  */
 export function handleMessage(
   message: Message,
   sender: chrome.runtime.MessageSender,
   sendResponse: (response: MessageResponse) => void
 ): boolean {
-  console.log('Message received:', message.type, sender);
-
   // Handle async operations
   (async () => {
     try {
-      switch (message.type) {
-        case 'start-monitoring': {
-          // TypeScript now knows payload is { scope, activeTabId? }
-          const { scope, activeTabId } = message.payload;
-          await startMonitoring(scope, activeTabId);
-          sendResponse({ success: true });
-          break;
-        }
-
-        case 'stop-monitoring': {
-          await stopMonitoring();
-          sendResponse({ success: true });
-          break;
-        }
-
-        case 'get-status': {
-          const status = await getStatus();
-          sendResponse({ success: true, data: status });
-          break;
-        }
-
-        case 'clear-logs': {
-          await clearLogs();
-          sendResponse({ success: true });
-          break;
-        }
-
-        case 'get-settings': {
-          const settings = await getSettings();
-          sendResponse({ success: true, data: settings });
-          break;
-        }
-
-        case 'update-settings': {
-          // TypeScript now knows payload is Partial<Settings>
-          const newSettings = message.payload;
-          await updateSettings(newSettings);
-          sendResponse({ success: true });
-          break;
-        }
-
-        case 'export-logs': {
-          // TypeScript now knows payload is { format: ExportFormat; selectedIds?: string[] }
-          const { format, selectedIds } = message.payload;
-          const logData = await getLogData();
-          const settings = await getSettings();
-
-          // Filter entries if selectedIds is provided
-          const entriesToExport = selectedIds
-            ? logData.entries.filter((entry) => selectedIds.includes(entry.id))
-            : logData.entries;
-
-          const filename = await exportLogs(entriesToExport, format, settings.exportSettings);
-
-          sendResponse({ success: true, data: { filename } });
-          break;
-        }
-
-        default: {
-          // Exhaustiveness check - TypeScript will error if we miss a case
-          const _exhaustive: never = message;
-          sendResponse({
-            success: false,
-            error: `Unknown message type: ${(_exhaustive as Message).type}`,
-          });
-        }
+      const handler = messageHandlers[message.type];
+      if (!handler) {
+        sendResponse({
+          success: false,
+          error: `Unknown message type: ${message.type}`,
+        });
+        return;
       }
+
+      const response = await handler(message, sender);
+      sendResponse(response);
     } catch (error) {
-      console.error('Error handling message:', error);
+      Logger.error('message-handler', error, { messageType: message.type });
       sendResponse({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

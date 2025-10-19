@@ -8,6 +8,7 @@ import { RequestProcessor } from '@/background/request-processor';
 import { RequestLogger } from '@/background/request-logger';
 import { MockStorageAdapter } from '@/lib/adapters/storage-adapter';
 import { StateManager } from '@/background/state-manager';
+import { Logger } from '@/lib/logger';
 import { defaultSettings, defaultLogData } from '@/types';
 import type { Settings, LogData } from '@/types';
 
@@ -228,7 +229,7 @@ describe('RequestProcessor', () => {
 
       // Force an error
       vi.spyOn(logger, 'logRequest').mockRejectedValue(new Error('Storage error'));
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const loggerErrorSpy = vi.spyOn(Logger, 'error').mockImplementation(() => {});
 
       const details = {
         requestId: 'req-123',
@@ -244,9 +245,9 @@ describe('RequestProcessor', () => {
       // Should not throw
       await expect(processor.processRequest(details)).resolves.toBeUndefined();
 
-      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(loggerErrorSpy).toHaveBeenCalled();
 
-      consoleErrorSpy.mockRestore();
+      loggerErrorSpy.mockRestore();
     });
 
     it('should pass headers when provided', async () => {

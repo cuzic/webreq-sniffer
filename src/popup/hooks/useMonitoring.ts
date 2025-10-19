@@ -6,7 +6,8 @@
 import { useEffect, useState } from 'react';
 import type { MonitoringStatus } from '@/types';
 import { startMonitoring, stopMonitoring, getStatus, clearLogs } from '../messaging';
-import { REFRESH_INTERVALS } from '@/lib/constants';
+import { stateEmitter } from '@/lib/state-change-emitter';
+import { Logger } from '@/lib/logger';
 
 export function useMonitoring() {
   const [status, setStatus] = useState<MonitoringStatus>({
@@ -17,11 +18,16 @@ export function useMonitoring() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Load status on mount and set up refresh interval
+  // Load status on mount and subscribe to real-time updates (Observer Pattern)
   useEffect(() => {
     loadStatus();
-    const interval = setInterval(loadStatus, REFRESH_INTERVALS.STATUS_POLLING);
-    return () => clearInterval(interval);
+
+    // Subscribe to storage changes instead of polling
+    const unsubscribe = stateEmitter.subscribe('logData:changed', () => {
+      loadStatus();
+    });
+
+    return unsubscribe;
   }, []);
 
   async function loadStatus() {
@@ -34,7 +40,7 @@ export function useMonitoring() {
         entries: result.entries,
       });
     } catch (error) {
-      console.error('Failed to load status:', error);
+      Logger.error('useMonitoring', error, { context: 'loadStatus' });
     }
   }
 
@@ -48,7 +54,10 @@ export function useMonitoring() {
       }
       await loadStatus();
     } catch (error) {
-      console.error('Failed to start/stop monitoring:', error);
+      Logger.error('useMonitoring', error, {
+        context: 'startStop',
+        isMonitoring: status.isMonitoring,
+      });
       alert(`Failed to ${status.isMonitoring ? 'stop' : 'start'} monitoring: ${error}`);
     } finally {
       setLoading(false);
@@ -67,7 +76,7 @@ export function useMonitoring() {
         await startMonitoring(newScope);
         await loadStatus();
       } catch (error) {
-        console.error('Failed to change scope:', error);
+        Logger.error('useMonitoring', error, { context: 'scopeChange', scope: newScope });
         alert(`Failed to change monitoring scope: ${error}`);
       } finally {
         setLoading(false);
@@ -81,7 +90,7 @@ export function useMonitoring() {
       await clearLogs();
       await loadStatus();
     } catch (error) {
-      console.error('Failed to clear logs:', error);
+      Logger.error('useMonitoring', error, { context: 'clearLogs' });
       alert(`Failed to clear logs: ${error}`);
     } finally {
       setLoading(false);

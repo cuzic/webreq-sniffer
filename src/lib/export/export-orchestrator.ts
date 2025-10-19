@@ -5,58 +5,30 @@
 
 import type { LogEntry, ExportFormat, ExportSettings } from '@/types';
 import { ExportError } from '@/lib/errors';
-import { renderTemplate } from '@/lib/template';
-import { getBuiltInTemplate } from '@/lib/builtinTemplates';
-import {
-  generateBashBatchDownload,
-  generatePowerShellBatchDownload,
-} from '@/lib/batch-download-generator';
-import { generateBashYtDlpWithCookies } from './generators/bash-generator';
+import { ExportGeneratorFactory } from './generator-factory';
 import { generateFilename } from './filename-generator';
 
 /**
  * Generate export content based on format
  *
- * Handles different export formats:
- * - Batch downloads (bash/powershell with quality selection)
- * - Cookie-aware downloads (yt-dlp with cookies)
- * - Template-based exports (all other formats)
+ * Uses Factory Pattern to delegate to appropriate generator based on format.
+ * Benefits:
+ * - Open/Closed Principle: Easy to add new formats without modifying this function
+ * - Single Responsibility: Each generator handles one specific format
+ * - Better testability: Each generator can be tested independently
  *
  * @param entries - Log entries to export
  * @param format - Export format
  * @returns Generated content string
- * @throws {ExportError} If no entries or template not found
+ * @throws {ExportError} If no entries or no generator found for format
  */
 export async function generateExportContent(
   entries: LogEntry[],
   format: ExportFormat
 ): Promise<string> {
-  // Handle batch download formats specially
-  if (format === 'bash-batch-download') {
-    if (entries.length === 0) {
-      throw new ExportError('No entries to export', { format });
-    }
-    return generateBashBatchDownload(entries[0]);
-  }
-
-  if (format === 'powershell-batch-download') {
-    if (entries.length === 0) {
-      throw new ExportError('No entries to export', { format });
-    }
-    return generatePowerShellBatchDownload(entries[0]);
-  }
-
-  // Handle cookie format (async)
-  if (format === 'bash-yt-dlp-cookies') {
-    return await generateBashYtDlpWithCookies(entries);
-  }
-
-  // All other formats use templates
-  const template = getBuiltInTemplate(format);
-  if (!template) {
-    throw new ExportError(`Template not found for format: ${format}`, { format });
-  }
-  return renderTemplate(template.template, entries);
+  const factory = new ExportGeneratorFactory();
+  const generator = factory.getGenerator(format);
+  return await generator.generate(entries);
 }
 
 /**

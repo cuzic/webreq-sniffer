@@ -415,7 +415,7 @@ describe('Export Logic', () => {
 
     it('should throw error for unknown format', async () => {
       await expect(generateExportContent(mockEntries, 'unknown' as ExportFormat)).rejects.toThrow(
-        'Template not found for format'
+        'No generator found for format'
       );
     });
   });
