@@ -188,7 +188,7 @@ export function PipelineTemplateEditor({
         {/* Validation Status */}
         {validation.valid ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-3 w-3 text-green-600" />
+            <CheckCircle2 className="h-3 w-3 text-success" />
             Valid template
           </div>
         ) : (
@@ -247,7 +247,7 @@ export function PipelineTemplateEditor({
               <div className="space-y-1 text-xs">
                 {VARIABLE_DOCS.system.map((variable) => (
                   <div key={variable.name} className="grid grid-cols-[100px_1fr_120px] gap-2">
-                    <code className="font-mono text-blue-600">{`{${variable.name}}`}</code>
+                    <code className="font-mono text-info">{`{${variable.name}}`}</code>
                     <span className="text-muted-foreground">{variable.description}</span>
                     <code className="font-mono text-xs text-right">{variable.example}</code>
                   </div>
@@ -261,7 +261,7 @@ export function PipelineTemplateEditor({
               <div className="space-y-1 text-xs">
                 {VARIABLE_DOCS.page.map((variable) => (
                   <div key={variable.name} className="grid grid-cols-[100px_1fr_120px] gap-2">
-                    <code className="font-mono text-blue-600">{`{${variable.name}}`}</code>
+                    <code className="font-mono text-info">{`{${variable.name}}`}</code>
                     <span className="text-muted-foreground">{variable.description}</span>
                     <code className="font-mono text-xs text-right truncate">
                       {variable.example}
@@ -277,7 +277,7 @@ export function PipelineTemplateEditor({
               <div className="space-y-1 text-xs">
                 {VARIABLE_DOCS.manifest.map((variable) => (
                   <div key={variable.name} className="grid grid-cols-[120px_1fr_120px] gap-2">
-                    <code className="font-mono text-blue-600">{`{${variable.name}}`}</code>
+                    <code className="font-mono text-info">{`{${variable.name}}`}</code>
                     <span className="text-muted-foreground">{variable.description}</span>
                     <code className="font-mono text-xs text-right">{variable.example}</code>
                   </div>
@@ -292,7 +292,7 @@ export function PipelineTemplateEditor({
                 {FILTER_DOCS.map((filter) => (
                   <div key={filter.name} className="space-y-0.5">
                     <div className="flex items-baseline gap-2">
-                      <code className="font-mono text-purple-600">{filter.name}</code>
+                      <code className="font-mono text-accent">{filter.name}</code>
                       <span className="text-muted-foreground">{filter.description}</span>
                     </div>
                     <code className="font-mono text-xs text-muted-foreground pl-4 block">
