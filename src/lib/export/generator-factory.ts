@@ -10,7 +10,7 @@
 
 import type { LogEntry, ExportFormat } from '@/types';
 import { ExportError } from '@/lib/errors';
-import { renderTemplate } from '@/lib/template';
+import { renderTemplate } from '@/lib/mustache-template';
 import { getBuiltInTemplate } from '@/lib/builtinTemplates';
 import {
   generateBashBatchDownload,
