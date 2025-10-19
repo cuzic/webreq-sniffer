@@ -1,606 +1,314 @@
-# リファクタリング候補
+# リファクタリング完了サマリー
 
-**作成日**: 2025-10-18
+**最終更新**: 2025-10-19
 **対象**: WebreqSniffer Chrome Extension
 
-このドキュメントは、コードベースの品質向上のための具体的なリファクタリング候補をまとめています。
+このドキュメントは、完了したリファクタリング作業と今後の候補をまとめています。
 
 ---
 
-## 🔥 高優先度
+## ✅ 完了したリファクタリング (Issue #64)
 
-### 1. Popup.tsxの分割（カスタムフック化） ✅ **完了**
+### Phase 1: Quick Wins（2025-10-18実装完了）
 
-**現状の問題**:
+すべての高優先度リファクタリングが完了しました:
 
-- Popup.tsx が403行と大きい
-- 16個のハンドラー関数が1つのコンポーネントに集中
-- 状態管理とビジネスロジックが混在
+#### 1. ✅ Popup.tsxの分割（カスタムフック化）
 
-**提案**:
-カスタムフックに分離して責務を明確化
+**実装ファイル**:
 
-#### 分割案
-
-**useLogActions.ts** - ログアクション関連
-
-```typescript
-export function useLogActions() {
-  const [loading, setLoading] = useState(false);
-
-  async function handleExport(format: ExportFormat, selectedIds?: Set<string>) {
-    // ... 既存のhandleExport実装
-  }
-
-  async function handleClear() {
-    // ... 既存のhandleClear実装
-  }
-
-  return { loading, handleExport, handleClear };
-}
-```
-
-**useEntryActions.ts** - エントリー別アクション
-
-```typescript
-export function useEntryActions() {
-  async function handleCopyUrl(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  async function handleCopyCurl(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  async function handleCopyCurlWithHeaders(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  async function handleCopyYtDlp(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  async function handleDelete(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  function handleOpenInTab(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  async function handleExportSingle(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  function handleShowDetails(entry: LogEntry) {
-    // ... 既存実装
-  }
-
-  return {
-    handleCopyUrl,
-    handleCopyCurl,
-    handleCopyCurlWithHeaders,
-    handleCopyYtDlp,
-    handleDelete,
-    handleOpenInTab,
-    handleExportSingle,
-    handleShowDetails,
-  };
-}
-```
-
-**useSelection.ts** - 選択状態管理
-
-```typescript
-export function useSelection(entries: LogEntry[]) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-
-  function handleToggle(id: string) {
-    // ... 既存実装
-  }
-
-  function handleSelectAll() {
-    // ... 既存実装
-  }
-
-  function handleClearAll() {
-    // ... 既存実装
-  }
-
-  function handleInvertSelection() {
-    // ... 既存実装
-  }
-
-  return {
-    selectedIds,
-    handleToggle,
-    handleSelectAll,
-    handleClearAll,
-    handleInvertSelection,
-  };
-}
-```
-
-**useMonitoring.ts** - 監視制御
-
-```typescript
-export function useMonitoring() {
-  const [status, setStatus] = useState<Status>({
-    isMonitoring: false,
-    monitoringScope: 'activeTab',
-    entryCount: 0,
-    entries: [],
-  });
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    loadStatus();
-    const interval = setInterval(loadStatus, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  async function loadStatus() {
-    // ... 既存実装
-  }
-
-  async function handleStartStop() {
-    // ... 既存実装
-  }
-
-  async function handleScopeChange(checked: boolean) {
-    // ... 既存実装
-  }
-
-  return {
-    status,
-    loading,
-    handleStartStop,
-    handleScopeChange,
-  };
-}
-```
+- `/src/popup/hooks/useMonitoring.ts` (103行)
+- `/src/popup/hooks/useSelection.ts` (68行)
+- `/src/popup/hooks/useEntryActions.ts` (115行)
 
 **効果**:
 
-- ✅ コンポーネントが簡潔に（398行 → 約150行）
-- ✅ 関心の分離（UI / ビジネスロジック）
-- ✅ テストが容易
-- ✅ 再利用性の向上
+- `Popup.tsx`: **403行 → 165行（59%削減）**
+- 関心の分離（UI / ビジネスロジック）
+- テスト容易性の向上
+- 再利用性の向上
 
-**実装難易度**: ⭐⭐⭐☆☆（中）
+**実装難易度**: ⭐⭐⭐☆☆
 **所要時間**: 約2時間
 
-**実装完了 (2025-10-18)**:
-
-- ✅ `/src/popup/hooks/useMonitoring.ts` を作成（103行）
-  - 監視状態管理（status, loading）
-  - handleStartStop - 監視の開始/停止
-  - handleScopeChange - スコープ変更
-  - handleClear - ログクリア
-- ✅ `/src/popup/hooks/useSelection.ts` を作成（68行）
-  - 選択状態管理（selectedIds）
-  - handleToggle, handleSelectAll, handleClearAll, handleInvertSelection
-  - entriesToExport - エクスポート対象エントリーの計算
-- ✅ `/src/popup/hooks/useEntryActions.ts` を作成（115行）
-  - 8つのエントリーアクションハンドラー
-  - クリップボード操作、タブ操作、エクスポート、詳細表示
-- ✅ `Popup.tsx` をリファクタリング
-  - **403行 → 165行（59%削減）**
-  - カスタムフックの使用によりロジック分離
-  - UIコンポーネントとしての責務に集中
-- ✅ ビルド成功確認済み
-
-**効果**:
-
-- コンポーネントが大幅に簡潔に（403行 → 165行）
-- 関心の分離（UI / ビジネスロジック）
-- テストが容易（フックを独立してテスト可能）
-- 再利用性の向上（フックは他のコンポーネントでも利用可能）
-
 ---
 
-### 2. LogList/LogEntryActionsのprops過多 ✅ **完了**
+#### 2. ✅ LogList/LogEntryActionsのprops過多解消
 
-**現状の問題**:
+**実装ファイル**:
 
-- LogListPropsに14個のプロパティ
-- LogEntryActionsPropsに11個のプロパティ
-- propsドリリング（prop drilling）が発生
-
-**提案**:
-アクションを1つのオブジェクトにまとめる
-
-#### リファクタリング案
-
-**types/actions.ts** (新規作成)
-
-```typescript
-export interface EntryActions {
-  onCopyUrl: (entry: LogEntry) => void;
-  onOpenInTab: (entry: LogEntry) => void;
-  onExport: (entry: LogEntry) => void;
-  onShowDetails: (entry: LogEntry) => void;
-  onDelete?: (entry: LogEntry) => void;
-  onCopyCurl?: (entry: LogEntry) => void;
-  onCopyCurlWithHeaders?: (entry: LogEntry) => void;
-  onCopyYtDlp?: (entry: LogEntry) => void;
-}
-
-export interface SelectionActions {
-  onToggle: (id: string) => void;
-  onSelectAll: () => void;
-  onClearAll: () => void;
-  onInvertSelection: () => void;
-}
-```
-
-**Before**:
-
-```typescript
-<LogList
-  entries={filteredEntries}
-  selectedIds={selectedIds}
-  onToggle={handleToggle}
-  onSelectAll={handleSelectAll}
-  onClearAll={handleClearAll}
-  onInvertSelection={handleInvertSelection}
-  onCopyUrl={handleCopyUrl}
-  onOpenInTab={handleOpenInTab}
-  onExport={handleExportSingle}
-  onShowDetails={handleShowDetails}
-  onDelete={handleDelete}
-  onCopyCurl={handleCopyCurl}
-  onCopyCurlWithHeaders={handleCopyCurlWithHeaders}
-  onCopyYtDlp={handleCopyYtDlp}
-/>
-```
-
-**After**:
-
-```typescript
-<LogList
-  entries={filteredEntries}
-  selection={{ selectedIds, ...selectionActions }}
-  entryActions={entryActions}
-/>
-```
+- `/src/types/actions.ts` (新規作成)
+- `LogEntryActions.tsx`: props 9個 → 2個
+- `LogList.tsx`: props 14個 → 4個
 
 **効果**:
 
-- ✅ propsの数が3個に削減（14個 → 3個）
-- ✅ 可読性の向上
-- ✅ 型安全性の維持
+- propsドリリングの解消
+- 可読性の大幅向上
+- 型安全性の維持
 
-**実装難易度**: ⭐⭐☆☆☆（簡単）
+**実装難易度**: ⭐⭐☆☆☆
 **所要時間**: 約30分
 
-**実装完了 (2025-10-18)**:
-
-- ✅ `/src/types/actions.ts` を作成
-  - `EntryActions` インターフェース（エントリー別アクション）
-  - `SelectionActions` インターフェース（選択アクション）
-- ✅ `/src/types/index.ts` にエクスポート追加
-- ✅ `LogEntryActions.tsx` を更新
-  - props: 9個 → 2個（entry + actions）
-- ✅ `LogList.tsx` を更新
-  - props: 14個 → 4個（entries + selectedIds + selectionActions + entryActions）
-  - `LogEntryItem` のprops削減
-- ✅ `Popup.tsx` を更新
-  - アクションをグループ化してオブジェクトで渡す
-- ✅ ビルド成功確認済み
-
 ---
 
-### 3. 定数の一元管理 ✅ **完了**
+#### 3. ✅ 定数の一元管理
 
-**現状の問題**:
+**実装ファイル**:
 
-- マジックナンバーが散在
-- 設定値がハードコード
-- 変更時に複数ファイルを修正
+- `/src/lib/constants.ts` (新規作成)
 
-**問題箇所の例**:
+**定義された定数**:
 
-```typescript
-// Popup.tsx
-const interval = setInterval(loadStatus, 1000); // 1000msがハードコード
-
-// ExportDialog.tsx
-const previewCount = Math.min(3, entries.length); // 3がハードコード
-const displayedLines = expanded ? previewLines : previewLines.slice(0, 15); // 15がハードコード
-
-// badge.ts
-if (entryCount >= 10000) {
-  // 10000がハードコード
-  badgeText = Math.floor(entryCount / 1000) + 'k';
-} else if (entryCount >= 1000) {
-  // 1000がハードコード
-  badgeText = (entryCount / 1000).toFixed(1) + 'k';
-}
-```
-
-**提案**:
-定数ファイルを作成して一元管理
-
-**lib/constants.ts** (新規作成)
-
-```typescript
-/**
- * Application Constants
- */
-
-// UI Refresh Intervals
-export const REFRESH_INTERVALS = {
-  STATUS_POLLING: 1000, // 1秒ごとにステータス更新
-  LOG_UPDATE: 500, // ログ更新間隔
-} as const;
-
-// Export Preview Settings
-export const EXPORT_PREVIEW = {
-  ENTRY_COUNT: 3, // プレビューに表示するエントリー数
-  LINE_LIMIT: 15, // 折りたたみ時の行数
-} as const;
-
-// Badge Display Settings
-export const BADGE = {
-  THRESHOLD_K: 1000, // k表示の閾値
-  THRESHOLD_10K: 10000, // 10k以上の閾値
-  COLOR_MONITORING: '#4CAF50', // 監視中の色
-  COLOR_STOPPED: '#757575', // 停止中の色
-} as const;
-
-// UI Dimensions
-export const UI = {
-  POPUP_WIDTH: 400, // ポップアップの幅（px）
-  LOG_LIST_HEIGHT: 300, // ログリスト の高さ（px）
-} as const;
-
-// Filtering
-export const FILTERS = {
-  ALL: 'all',
-  MEDIA: 'media',
-  XHR: 'xmlhttprequest',
-  SCRIPT: 'script',
-  STYLESHEET: 'stylesheet',
-  IMAGE: 'image',
-  FONT: 'font',
-  DOCUMENT: 'document',
-  OTHER: 'other',
-} as const;
-
-// Type Guards
-export function isFilterType(value: string): value is keyof typeof FILTERS {
-  return Object.values(FILTERS).includes(value as any);
-}
-```
-
-**使用例**:
-
-```typescript
-// Before
-const interval = setInterval(loadStatus, 1000);
-
-// After
-import { REFRESH_INTERVALS } from '@/lib/constants';
-const interval = setInterval(loadStatus, REFRESH_INTERVALS.STATUS_POLLING);
-```
+- `REFRESH_INTERVALS` - UI更新間隔
+- `EXPORT_PREVIEW` - プレビュー設定
+- `MONITORING` - 監視設定
+- `BADGE` - バッジ表示設定
+- `UI` - UI寸法設定
+- `STORAGE` - ストレージ設定
+- `EXPORT` - エクスポート設定
+- `FILTERING` - フィルタリングパターン
 
 **効果**:
 
-- ✅ 設定値の変更が容易
-- ✅ マジックナンバーの排除
-- ✅ 保守性の向上
-- ✅ 型安全性の向上（as const）
+- マジックナンバーの排除
+- 設定変更の一元化
+- 保守性の向上
 
-**実装難易度**: ⭐☆☆☆☆（非常に簡単）
+**実装難易度**: ⭐☆☆☆☆
 **所要時間**: 約1時間
 
-**実装完了 (2025-10-18)**:
-
-- ✅ `/src/lib/constants.ts` を作成
-- ✅ `REFRESH_INTERVALS` - UI更新間隔（Popup.tsxで使用）
-- ✅ `EXPORT_PREVIEW` - プレビュー設定（ExportDialog.tsxで使用）
-- ✅ `MONITORING` - 監視設定（badge.tsで使用）
-- ✅ `BADGE` - バッジ表示設定（badge.tsで使用）
-- ✅ `UI` - UI寸法設定
-- ✅ `STORAGE` - ストレージ設定（schemas.tsで使用）
-- ✅ `EXPORT` - エクスポート設定（schemas.tsで使用）
-- ✅ `FILTERING` - フィルタリングパターン（filtering.tsで使用）
-- ✅ ビルド成功確認済み
-
 ---
 
-## ⭐ 中優先度
+#### 4. ✅ エラーハンドリングの統一
 
-### 4. エラーハンドリングの統一 ✅ **完了**
+**実装ファイル**:
 
-**現状の問題**:
+- `/src/lib/error-handling.ts` (98行)
 
-- try-catchが各所に散在
-- エラーメッセージが統一されていない
-- エラーログの形式が不統一
+**提供機能**:
 
-**提案**:
-エラーハンドリングユーティリティを作成
-
-**lib/error-handling.ts** (新規作成)
-
-```typescript
-/**
- * Error Handling Utilities
- */
-
-import { toast } from 'sonner';
-
-export class AppError extends Error {
-  constructor(
-    message: string,
-    public readonly code: string,
-    public readonly context?: Record<string, any>
-  ) {
-    super(message);
-    this.name = 'AppError';
-  }
-}
-
-export function handleError(error: unknown, userMessage?: string): void {
-  console.error('Error occurred:', error);
-
-  if (error instanceof AppError) {
-    toast.error(userMessage || error.message);
-  } else if (error instanceof Error) {
-    toast.error(userMessage || 'エラーが発生しました');
-  } else {
-    toast.error('不明なエラーが発生しました');
-  }
-}
-
-export async function tryCatch<T>(fn: () => Promise<T>, errorMessage: string): Promise<T | null> {
-  try {
-    return await fn();
-  } catch (error) {
-    handleError(error, errorMessage);
-    return null;
-  }
-}
-```
-
-**使用例**:
-
-```typescript
-// Before
-async function handleCopyUrl(entry: LogEntry) {
-  try {
-    await navigator.clipboard.writeText(entry.url);
-    toast.success('URLをコピーしました');
-  } catch (error) {
-    console.error('Failed to copy URL:', error);
-    toast.error('URLのコピーに失敗しました');
-  }
-}
-
-// After
-async function handleCopyUrl(entry: LogEntry) {
-  const success = await tryCatch(
-    () => navigator.clipboard.writeText(entry.url),
-    'URLのコピーに失敗しました'
-  );
-  if (success) {
-    toast.success('URLをコピーしました');
-  }
-}
-```
+- `AppError` クラス - コンテキスト付きカスタムエラー
+- `handleError` 関数 - エラー処理とトースト通知
+- `tryCatch` 関数 - 非同期エラーハンドリング
+- `tryCatchSync` 関数 - 同期エラーハンドリング
+- `ErrorCode` 定数
 
 **効果**:
 
-- ✅ エラー処理の一貫性
-- ✅ コードの簡潔化
-- ✅ エラーログの統一
-
-**実装難易度**: ⭐⭐☆☆☆（簡単）
-**所要時間**: 約1.5時間
-
-**実装完了 (2025-10-18)**:
-
-- ✅ `/src/lib/error-handling.ts` を作成（98行）
-  - `AppError` クラス - コンテキスト付きカスタムエラー
-  - `handleError` 関数 - エラー処理とトースト通知
-  - `tryCatch` 関数 - 非同期エラーハンドリングラッパー
-  - `tryCatchSync` 関数 - 同期エラーハンドリングラッパー
-  - `isAppError` 型ガード
-  - `ErrorCode` 定数 - 共通エラーコード
-- ✅ `Popup.tsx` を更新
-  - `handleCopyUrl` - tryCatch使用に変更
-  - `handleOpenInTab` - tryCatchSync使用に変更
-  - `handleExportSingle` - tryCatch使用に変更
-  - `handleCopyCurl` - tryCatch使用に変更
-  - `handleCopyCurlWithHeaders` - tryCatch使用に変更
-  - `handleCopyYtDlp` - tryCatch使用に変更
-- ✅ ビルド成功確認済み
-
-**効果**:
-
-- コード行数削減（try-catch-finallyブロックの簡略化）
+- try-catch-finallyブロックの簡略化
 - エラーログの統一
 - エラーメッセージの一貫性向上
-- 再利用可能なエラーハンドリングロジック
+
+**実装難易度**: ⭐⭐☆☆☆
+**所要時間**: 約1.5時間
 
 ---
 
-### 5. 型定義の改善 ✅ **完了**
+#### 5. ✅ 型定義の改善
 
-**現状の問題**:
+**実装ファイル**:
 
-- interfaceとtypeの使い分けが不統一
-- 一部の型定義が冗長
-
-**提案**:
-型定義のガイドラインを策定し、リファクタリング
-
-**ガイドライン**:
-
-- オブジェクトの形状: `interface`
-- ユニオン型、交差型: `type`
-- 公開API: `interface`（拡張可能性）
-- 内部実装: `type`
-
-**Before**:
-
-```typescript
-// 複数の場所で同じ型を定義
-type Status = {
-  isMonitoring: boolean;
-  monitoringScope: 'activeTab' | 'allTabs';
-  entryCount: number;
-  entries: LogEntry[];
-};
-```
-
-**After**:
-
-```typescript
-// types/models.ts
-export interface MonitoringStatus {
-  isMonitoring: boolean;
-  monitoringScope: MonitoringScope;
-  entryCount: number;
-  entries: LogEntry[];
-}
-
-export type MonitoringScope = 'activeTab' | 'allTabs';
-```
+- `/src/types/models.ts` - `MonitoringStatus`インターフェース追加
+- `/src/types/actions.ts` - アクション型の統一
+- `/src/types/index.ts` - エクスポートの整理
 
 **効果**:
 
-- ✅ 型の再利用性向上
-- ✅ 一貫性の確保
-- ✅ ドキュメンテーション性の向上
+- 型定義の一元管理
+- `MonitoringScope`の正しい使用
+- 再利用可能な型定義
 
-**実装難易度**: ⭐⭐☆☆☆（簡単）
+**実装難易度**: ⭐⭐☆☆☆
 **所要時間**: 約1時間
 
-**実装完了 (2025-10-18)**:
+---
 
-- ✅ `/src/types/models.ts` に `MonitoringStatus` インターフェース追加
-  - `MonitoringScope` 型を使用（インライン文字列リテラルの代わりに）
-  - UIステート表現に適したインターフェースとして定義
-- ✅ `/src/types/index.ts` に `MonitoringStatus` エクスポート追加
-- ✅ `/src/popup/hooks/useMonitoring.ts` を更新
-  - ローカル定義を削除
-  - `@/types` から `MonitoringStatus` をインポート
-- ✅ ビルド成功確認済み
+### Phase 2: デザインパターンリファクタリング（2025-10-19実装完了）
+
+**Issue #64の全5パターンを実装完了**:
+
+#### Priority 1: ✅ Factory Pattern（エクスポートジェネレーター）
+
+**実装ファイル**:
+
+- `/src/lib/export/generator-factory.ts` (176行)
+- `/tests/unit/export-generator-factory.test.ts` (233行、19テスト)
+
+**主要クラス**:
+
+- `IExportGenerator` インターフェース
+- `ExportGeneratorFactory` クラス
+- 複数のジェネレーター実装
 
 **効果**:
 
-- 型定義の一元管理により、一貫性が向上
-- `MonitoringScope` 型の正しい使用で type safety 向上
-- 再利用可能な型定義により、将来的な拡張が容易に
+- `export-orchestrator.ts`: 35行 → 4行
+- Cyclomatic Complexity: 4 → 1
+- Open/Closed Principleの適用
+- 新しいフォーマット追加が容易
+
+**テスト**: 19テスト（全合格）
 
 ---
 
-## 💡 低優先度（今後の検討）
+#### Priority 2: ✅ Observer Pattern（状態変更エミッター）
 
-### 6. コンポーネントの最適化
+**実装ファイル**:
+
+- `/src/lib/state-change-emitter.ts` (138行)
+- `/tests/unit/state-change-emitter.test.ts` (197行、13テスト)
+
+**主要クラス**:
+
+- `StateChangeEmitter` クラス
+- `subscribe()`, `emit()`, `unsubscribe()`メソッド
+
+**効果**:
+
+- **1秒ごとのポーリングを廃止** → イベント駆動に変更
+- リアルタイム更新の実現
+- CPU/バッテリー使用量の削減
+- `chrome.storage.onChanged`との統合
+
+**統合箇所**:
+
+- `/src/background/index.ts` - ストレージリスナー
+- `/src/popup/hooks/useMonitoring.ts` - ポーリング削除
+
+**テスト**: 13テスト（全合格）
+
+---
+
+#### Priority 3: ✅ Chain of Responsibility Pattern（リクエストハンドラーチェーン）
+
+**実装ファイル**:
+
+- `/src/background/request-handler-chain.ts` (191行)
+- `/tests/unit/request-handler-chain.test.ts` (429行、19テスト)
+
+**主要クラス**:
+
+- `RequestHandler` インターフェース
+- `MonitoringCheckHandler` - 監視状態確認
+- `FilteringHandler` - フィルタリング処理
+- `LoggingHandler` - ログ記録
+- `RequestHandlerChain` - チェーンの構築
+
+**効果**:
+
+- `request-processor.ts`: 74行 → 42行（43%削減）
+- 責任の分離
+- 柔軟な処理パイプライン
+- ハンドラーの追加/削除が容易
+
+**テスト**: 19テスト（全合格）
+
+---
+
+#### Priority 4: ✅ Builder Pattern（LogEntry構築）
+
+**実装ファイル**:
+
+- `/src/background/log-entry-builder.ts` (182行)
+- `/tests/unit/log-entry-builder.test.ts` (394行、25テスト)
+
+**主要クラス**:
+
+- `LogEntryBuilder` クラス
+- Fluent API: `fromWebRequest()`, `withHeaders()`, `withPageMetadata()`, `build()`
+- Static Factory Method: `LogEntryBuilder.fromRequest()`
+
+**効果**:
+
+- `logging.ts`: 77行 → 48行（38%削減）
+- 読みやすいコード
+- バリデーション機能
+- オプショナルフィールドの追加が容易
+
+**テスト**: 25テスト（全合格）
+
+---
+
+#### Priority 5: ✅ Template Method Pattern（スクリプトジェネレーター）
+
+**実装ファイル**:
+
+- `/src/lib/export/generators/script-generator-template.ts` (227行)
+- `/tests/unit/script-generator-template.test.ts` (296行、23テスト)
+
+**主要クラス**:
+
+- `ScriptGenerator` 抽象基底クラス
+- `BashCurlScriptGenerator` - Bash curlスクリプト
+- `BashYtDlpScriptGenerator` - Bash yt-dlpスクリプト
+- `PowerShellScriptGenerator` - PowerShellスクリプト
+
+**テンプレートメソッドアルゴリズム**:
+
+1. `beforeGenerate()` - フック
+2. `generateHeader()` - 抽象メソッド
+3. `processEntry()` - 抽象メソッド（各エントリー）
+4. `generateFooter()` - フック
+5. `joinLines()` - 共通メソッド
+6. `afterGenerate()` - フック
+
+**効果**:
+
+- コードの再利用
+- 一貫した構造
+- 新しいジェネレータの追加が容易
+- ヘッダー/フッター/エントリー処理の分離
+
+**テスト**: 23テスト（全合格）
+
+---
+
+## 📊 実装統計
+
+### Phase 1 + Phase 2 の合計
+
+**新規作成ファイル**: 13個
+
+- カスタムフック: 3個
+- デザインパターン実装: 5個
+- ユーティリティ: 3個
+- 型定義: 2個
+
+**テストファイル**: 5個
+
+- 合計テスト数: **99テスト**
+- すべて合格
+
+**変更ファイル**: 8個
+
+**削減されたコード**:
+
+- `Popup.tsx`: 403行 → 165行（-238行、59%削減）
+- `request-processor.ts`: 74行 → 42行（-32行、43%削減）
+- `logging.ts`: 77行 → 48行（-29行、38%削減）
+- `export-orchestrator.ts`: 35行 → 4行（-31行、89%削減）
+
+**Cyclomatic Complexity削減**:
+
+- `export-orchestrator.ts`: 4 → 1
+
+**合計実装時間**: 約12時間
+
+**効果**:
+
+- ✅ コードの保守性が大幅に向上
+- ✅ テストカバレッジの向上（+99テスト）
+- ✅ SOLIDプリンシパルの適用
+- ✅ パフォーマンスの改善（ポーリング廃止）
+- ✅ 拡張性の向上
+- ✅ 可読性の向上
+
+---
+
+## 🎯 今後のリファクタリング候補
+
+### コンポーネントの最適化（低優先度）
 
 **提案**:
 
@@ -608,49 +316,143 @@ export type MonitoringScope = 'activeTab' | 'allTabs';
 - useMemoの最適化
 - useCallbackの適用
 
-### 7. イベント駆動アーキテクチャの導入
+**対象コンポーネント**:
 
-**提案**:
+- `LogList.tsx` - 大量エントリーのレンダリング最適化
+- `LogEntryItem.tsx` - 個別エントリーのメモ化
+- `ExportDialog.tsx` - プレビュー生成の最適化
 
-- EventEmitterパターンの導入
-- リスナーの疎結合化
+**期待される効果**:
 
-### 8. テストカバレッジの向上
+- レンダリングパフォーマンスの向上
+- メモリ使用量の削減
+- 大量ログでの快適な操作
+
+**実装難易度**: ⭐⭐☆☆☆
+**推定所要時間**: 2-3時間
+
+---
+
+### テストカバレッジの向上（中優先度）
 
 **提案**:
 
 - カスタムフックのユニットテスト
-- コンポーネントのインテグレーションテスト
+- E2Eテストの拡充
+- インテグレーションテストの追加
+
+**対象**:
+
+- `useMonitoring.ts` - 監視状態管理のテスト
+- `useSelection.ts` - 選択状態管理のテスト
+- `useEntryActions.ts` - アクション実行のテスト
+
+**現在のテスト状況**:
+
+- テストファイル数: 30個
+- テスト数: 524個（すべて合格）
+- カバレッジ: 未測定
+
+**期待される効果**:
+
+- バグの早期発見
+- リファクタリングの安全性向上
+- コードの信頼性向上
+
+**実装難易度**: ⭐⭐⭐☆☆
+**推定所要時間**: 4-6時間
 
 ---
 
-## 📋 実装順序の推奨
+### ステート管理のリファクタリング（低優先度）
 
-1. **定数の一元管理** (1時間) - 影響範囲が小さく、効果が大きい
-2. **props過多の解消** (30分) - 型安全性を保ちながら簡単に実装
-3. **エラーハンドリングの統一** (1.5時間) - コード品質の向上
-4. **Popup.tsxの分割** (2時間) - 最も影響が大きいリファクタリング
-5. **型定義の改善** (1時間) - 継続的な改善
+**現状**:
 
-**合計所要時間**: 約6時間
+- `chrome.storage`の直接使用
+- 複数箇所での状態管理
+- 同期の一貫性
+
+**提案**:
+
+- ステート管理ライブラリの導入検討（Zustand, Jotai等）
+- または自作のステート管理レイヤーの実装
+- Observer Patternのさらなる活用
+
+**期待される効果**:
+
+- 状態管理の一元化
+- デバッグの容易化
+- パフォーマンスの向上
+
+**実装難易度**: ⭐⭐⭐⭐☆（高い）
+**推定所要時間**: 8-10時間
+
+---
+
+## 📋 推奨される次のアクション
+
+### 1. ドキュメントの整備（1-2時間）
+
+- ✅ デザインパターン実装ドキュメント作成
+- ✅ アーキテクチャ図の作成
+- ✅ コントリビューションガイドの作成
+
+### 2. パフォーマンス測定（2-3時間）
+
+- React DevTools Profilerでの計測
+- メモリリーク調査
+- 大量ログでのストレステスト
+
+### 3. ユーザーフィードバックの収集（継続的）
+
+- GitHub Issuesでのフィードバック収集
+- 使用統計の分析（プライバシーに配慮）
+- Beta版でのテスト
 
 ---
 
 ## ✅ チェックリスト
 
-リファクタリング実施前に確認：
+リファクタリング実施前の確認：
 
-- [ ] すべてのテストが通過している
-- [ ] ブランチを作成している（feature/refactor-xxx）
-- [ ] 変更内容を小さく保つ（1PRあたり1リファクタリング）
-- [ ] リファクタリング後にテストを追加
-- [ ] ビルドが成功する
-- [ ] 既存機能が動作する（手動テスト）
+- [x] すべてのテストが通過している（524テスト合格）
+- [x] ブランチを作成している
+- [x] 変更内容を小さく保つ（段階的実装）
+- [x] リファクタリング後にテストを追加（+99テスト）
+- [x] ビルドが成功する
+- [x] 既存機能が動作する
 
 ---
 
-**次のアクション**:
+## 🎉 成果サマリー
 
-1. 定数の一元管理から着手することを推奨
-2. 各リファクタリングごとに個別のissueを作成
-3. 段階的に実施して、リスクを最小化
+**Issue #64: デザインパターンリファクタリング**は、TDDアプローチにより**完全に達成**されました。
+
+### 主な成果
+
+1. **コード品質の大幅向上**
+   - SOLIDプリンシパルの適用
+   - デザインパターンの正しい実装
+   - 読みやすく保守しやすいコード
+
+2. **テストカバレッジの向上**
+   - +99テスト追加
+   - すべてのパターンに対するユニットテスト
+   - E2Eテストも継続的に合格
+
+3. **パフォーマンスの改善**
+   - ポーリングからイベント駆動へ
+   - Cyclomatic Complexityの削減
+   - コード行数の削減（-330行以上）
+
+4. **拡張性の向上**
+   - 新機能の追加が容易
+   - Open/Closed Principleの適用
+   - 柔軟なアーキテクチャ
+
+**次のステップ**: ユーザー体験の継続的改善と、新機能の追加に注力します。
+
+---
+
+**最終更新日**: 2025-10-19
+**ステータス**: Phase 1 + Phase 2 完了 ✅

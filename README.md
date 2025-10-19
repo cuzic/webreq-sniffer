@@ -157,8 +157,9 @@ Invoke-WebRequest -Uri "https://example.com/video.m3u8" -Headers $headers
 - **UI Library**: Tailwind CSS + shadcn/ui
 - **Storage**: chrome.storage API with custom StateManager (5s cache TTL)
 - **Validation**: Zod schemas for runtime type safety
-- **Testing**: Vitest (201 tests passing)
+- **Testing**: Vitest (524 tests passing) - comprehensive unit and E2E tests
 - **Code Quality**: ESLint + Prettier + Husky
+- **Design Patterns**: Factory, Observer, Chain of Responsibility, Builder, Template Method
 
 ### Project Structure
 
@@ -171,16 +172,23 @@ webreq-sniffer/
 │   │   ├── storage.ts       # chrome.storage wrapper
 │   │   ├── messages.ts      # Message handlers
 │   │   ├── listeners.ts     # webRequest listeners
-│   │   ├── request-processor.ts  # Request processing coordinator
-│   │   ├── request-filter.ts     # Filtering logic encapsulation
-│   │   ├── request-logger.ts     # Log entry management
+│   │   ├── request-processor.ts     # Request processing coordinator
+│   │   ├── request-handler-chain.ts # Chain of Responsibility pattern
+│   │   ├── request-filter.ts        # Filtering logic encapsulation
+│   │   ├── request-logger.ts        # Log entry management
+│   │   ├── log-entry-builder.ts     # Builder pattern for LogEntry
 │   │   ├── filtering.ts     # Core filtering functions
 │   │   ├── logging.ts       # Log utilities
 │   │   ├── export.ts        # Export script generation
 │   │   └── badge.ts         # Extension badge control
 │   ├── lib/                 # Shared utilities
 │   │   ├── constants.ts     # Centralized constants
-│   │   ├── errors.ts        # Custom error classes
+│   │   ├── error-handling.ts # Error handling utilities
+│   │   ├── state-change-emitter.ts # Observer pattern
+│   │   ├── export/
+│   │   │   ├── generator-factory.ts # Factory pattern
+│   │   │   └── generators/
+│   │   │       └── script-generator-template.ts # Template Method
 │   │   └── adapters/        # Storage adapters (Chrome/Mock)
 │   ├── popup/               # Popup UI
 │   │   ├── popup.tsx        # Entry point
@@ -228,11 +236,13 @@ npm run format
 
 All tests pass with TDD methodology:
 
-- **201 tests** covering all components
-- Unit tests for business logic
-- Integration tests for request processing
+- **524 tests** covering all components
+  - Unit tests (511 tests): business logic, design patterns, utilities
+  - E2E tests (13 tests): extension functionality, UI interactions
+- Design pattern implementations with comprehensive test coverage
 - Type validation tests
 - Service Worker tests
+- Integration tests for request processing
 
 ```bash
 npm test
@@ -248,25 +258,42 @@ npm test
 
 ## Architecture
 
+### Design Patterns
+
+WebreqSniffer implements **5 design patterns** for maintainability and extensibility:
+
+1. **Factory Pattern**: Export generator creation (`ExportGeneratorFactory`)
+2. **Observer Pattern**: State change notifications (`StateChangeEmitter`)
+3. **Chain of Responsibility**: Request processing pipeline (`RequestHandlerChain`)
+4. **Builder Pattern**: LogEntry construction (`LogEntryBuilder`)
+5. **Template Method**: Script generation algorithm (`ScriptGenerator`)
+
+See [docs/DESIGN-PATTERNS.md](docs/DESIGN-PATTERNS.md) for detailed documentation.
+
 ### Service Worker (Background)
 
-The background service worker uses a **class-based architecture** with dependency injection for better testability and separation of concerns:
+The background service worker uses a **class-based architecture** with dependency injection and design patterns:
 
 - **StateManager**: Manages application state with 5-second caching
+- **StateChangeEmitter** (Observer): Real-time state change notifications, eliminating polling
 - **RequestProcessor**: Coordinates the request processing workflow
-- **RequestFilter**: Encapsulates filtering logic
+- **RequestHandlerChain** (Chain of Responsibility): Monitoring → Filtering → Logging pipeline
 - **RequestLogger**: Manages log entries with deduplication and ring buffer
+- **LogEntryBuilder** (Builder): Constructs LogEntry objects with validation
+- **ExportGeneratorFactory** (Factory): Creates appropriate export generators
 - **Message Handlers**: Handles communication with Popup/Options pages
-- **Export Module**: Generates scripts in multiple formats
 
 ### Class Architecture
 
 ```
 RequestProcessor
     ├── StateManager (injected)
-    ├── RequestFilter (injected)
-    └── RequestLogger (injected)
-        └── StateManager (injected)
+    └── RequestHandlerChain
+        ├── MonitoringCheckHandler
+        ├── FilteringHandler
+        └── LoggingHandler
+            ├── RequestLogger (injected)
+            └── LogEntryBuilder
 ```
 
 ### Data Flow
@@ -325,22 +352,44 @@ This extension requires the following permissions:
 
 ### Completed ✅
 
-- [x] Service Worker implementation
-- [x] Popup UI
-- [x] Options Page
+**Core Features:**
+
+- [x] Service Worker implementation (Manifest V3)
+- [x] Popup UI with React 19 + Tailwind CSS
+- [x] Options Page with comprehensive settings
 - [x] Export functionality (5 formats)
-- [x] Unit tests with Vitest (201 tests)
+- [x] HLS/DASH manifest parsing
+- [x] Page metadata collection
+
+**Code Quality (Issue #64):**
+
+- [x] Design Patterns implementation:
+  - [x] Factory Pattern (Export generators)
+  - [x] Observer Pattern (State change notifications)
+  - [x] Chain of Responsibility (Request pipeline)
+  - [x] Builder Pattern (LogEntry construction)
+  - [x] Template Method (Script generators)
+- [x] Comprehensive testing (524 tests, all passing)
+- [x] TDD methodology for all patterns
 - [x] Class-based architecture with dependency injection
 - [x] Type-safe discriminated unions for messages
 - [x] Constants centralization
 - [x] Error handling with custom error classes
 - [x] State management with caching (5s TTL)
+- [x] Real-time UI updates (eliminated polling)
+
+**Performance:**
+
+- [x] Observer Pattern replaced 1-second polling
+- [x] Code reduction: -330+ lines across multiple files
+- [x] Cyclomatic complexity reduction: 4 → 1 in critical paths
 
 ### Planned 🚀
 
-- [ ] E2E tests with Puppeteer
+- [ ] React component optimization (React.memo, useMemo)
 - [ ] Chrome Web Store publishing
-- [ ] Performance optimization for large datasets
+- [ ] Performance optimization for large datasets (10,000+ entries)
+- [ ] Expanded test coverage for custom hooks
 
 ## License
 
