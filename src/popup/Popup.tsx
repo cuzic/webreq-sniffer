@@ -28,6 +28,7 @@ import { defaultSettings } from '@/types/schemas';
 import { Logger } from '@/lib/logger';
 import { detectDuplicates, DuplicateStrategy } from '@/lib/duplicate-detector';
 import { filterManifestEntries } from '@/lib/manifest-filter';
+import { loadFilterPreferences, saveFilterPreferences } from '@/lib/filter-preferences';
 
 export function Popup() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,14 +47,31 @@ export function Popup() {
   const selection = useSelection(monitoring.status.entries);
   const entryActionsHook = useEntryActions(setDetailsEntry, setShowDetailsDialog);
 
-  // Load settings on mount
+  // Load settings and filter preferences on mount
   useEffect(() => {
+    // Load settings
     chrome.storage.sync.get(['settings'], (result) => {
       if (result.settings) {
         setSettings(result.settings);
       }
     });
+
+    // Load filter preferences
+    loadFilterPreferences().then((prefs) => {
+      setShowDuplicatesOnly(prefs.showDuplicatesOnly);
+      setDuplicateStrategy(prefs.duplicateStrategy);
+      setSmartFilterEnabled(prefs.smartFilterEnabled);
+    });
   }, []);
+
+  // Save filter preferences when they change
+  useEffect(() => {
+    saveFilterPreferences({
+      showDuplicatesOnly,
+      duplicateStrategy,
+      smartFilterEnabled,
+    });
+  }, [showDuplicatesOnly, duplicateStrategy, smartFilterEnabled]);
 
   // Apply preset handler
   function handleApplyPreset(presetId: string) {
