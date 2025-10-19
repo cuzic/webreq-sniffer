@@ -15,6 +15,11 @@ import {
   generatePowerShellBatchDownload,
 } from '@/lib/batch-download-generator';
 import { getCookiesForUrl, generateNetscapeCookieJar } from '@/lib/cookie-manager';
+import { escapeShellArg } from '@/lib/export/escapers/shell-escaper';
+import { escapePowerShellArg } from '@/lib/export/escapers/powershell-escaper';
+
+// Re-export escapers for backward compatibility
+export { escapeShellArg, escapePowerShellArg };
 
 /**
  * Check if entries contain manifest with variants
@@ -35,28 +40,6 @@ export function hasManifestVariants(entries: LogEntry[]): boolean {
 export function isManifestUrl(url: string): boolean {
   const urlLower = url.toLowerCase();
   return urlLower.includes('.m3u8') || urlLower.includes('.mpd');
-}
-
-/**
- * Escape string for Bash shell (single quotes)
- */
-export function escapeShellArg(str: string): string {
-  // In single quotes, only single quote needs escaping
-  // We escape it by ending the quote, adding escaped quote, and starting quote again
-  return `'${str.replace(/'/g, "'\\''")}'`;
-}
-
-/**
- * Escape string for PowerShell
- */
-export function escapePowerShellArg(str: string): string {
-  // PowerShell uses backtick for escaping
-  return str
-    .replace(/`/g, '``')
-    .replace(/\$/g, '`$')
-    .replace(/"/g, '`"')
-    .replace(/\n/g, '`n')
-    .replace(/\r/g, '`r');
 }
 
 /**
