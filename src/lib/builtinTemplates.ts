@@ -1,6 +1,6 @@
 /**
  * Built-in Export Templates
- * Pre-defined Handlebars templates for common export formats
+ * Mustache templates for common export formats (CSP-compliant)
  */
 
 import type { ExportTemplate } from '@/types';
@@ -9,9 +9,9 @@ export const BUILTIN_TEMPLATES: ExportTemplate[] = [
   {
     id: 'url-list',
     name: 'URL List',
-    template: `{{#each entries}}
+    template: `{{#entries}}
 {{{url}}}
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.txt',
     isBuiltIn: true,
     description: 'Simple list of URLs, one per line',
@@ -23,9 +23,9 @@ export const BUILTIN_TEMPLATES: ExportTemplate[] = [
 # Generated on {{exportDate}}
 # Total entries: {{totalEntries}}
 
-{{#each entries}}
-curl "{{{escapeShell url}}}"
-{{/each}}`,
+{{#entries}}
+curl {{{urlEscaped}}}
+{{/entries}}`,
     fileExtension: '.sh',
     isBuiltIn: true,
     description: 'Bash script with curl commands',
@@ -37,17 +37,17 @@ curl "{{{escapeShell url}}}"
 # Generated on {{exportDate}}
 # Total entries: {{totalEntries}}
 
-{{#each entries}}
-curl "{{{escapeShell url}}}" \\
+{{#entries}}
+curl {{{urlEscaped}}} \\
   -H "User-Agent: {{headers.User-Agent}}" \\
-{{#if headers.Referer}}
-  -H "Referer: {{headers.Referer}}" \\
-{{/if}}
-{{#if headers.Origin}}
-  -H "Origin: {{headers.Origin}}" \\
-{{/if}}
+{{#headers.Referer}}
+  -H "Referer: {{{.}}}" \\
+{{/headers.Referer}}
+{{#headers.Origin}}
+  -H "Origin: {{{.}}}" \\
+{{/headers.Origin}}
   -H "Accept: {{headers.Accept}}"
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.sh',
     isBuiltIn: true,
     description: 'Bash script with curl commands including headers',
@@ -59,14 +59,14 @@ curl "{{{escapeShell url}}}" \\
 # Generated on {{exportDate}}
 # Total entries: {{totalEntries}}
 
-{{#each entries}}
-yt-dlp "{{{escapeShell url}}}" \\
+{{#entries}}
+yt-dlp {{{urlEscaped}}} \\
   --user-agent "{{headers.User-Agent}}" \\
-{{#if headers.Referer}}
-  --referer "{{headers.Referer}}" \\
-{{/if}}
+{{#headers.Referer}}
+  --referer "{{{.}}}" \\
+{{/headers.Referer}}
   -o "{{index1}}_%(title)s.%(ext)s"
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.sh',
     isBuiltIn: true,
     description: 'Bash script with yt-dlp commands',
@@ -77,14 +77,14 @@ yt-dlp "{{{escapeShell url}}}" \\
     template: `# Generated on {{exportDate}}
 # Total entries: {{totalEntries}}
 
-{{#each entries}}
-Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
-  -UserAgent "{{headers.User-Agent}}" \\
-{{#if headers.Referer}}
-  -Headers @{"Referer"="{{headers.Referer}}"} \\
-{{/if}}
+{{#entries}}
+Invoke-WebRequest -Uri "{{{urlEscapedPowerShell}}}" \`
+  -UserAgent "{{headers.User-Agent}}" \`
+{{#headers.Referer}}
+  -Headers @{"Referer"="{{{.}}}"} \`
+{{/headers.Referer}}
   -OutFile "{{index1}}_{{filename}}"
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.ps1',
     isBuiltIn: true,
     description: 'PowerShell script with Invoke-WebRequest commands',
@@ -96,7 +96,7 @@ Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
   "exportDate": "{{exportDateISO}}",
   "totalEntries": {{totalEntries}},
   "entries": [
-{{#each entries}}
+{{#entries}}
     {
       "index": {{index}},
       "url": "{{{url}}}",
@@ -106,8 +106,8 @@ Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
       "domain": "{{domain}}",
       "path": "{{{path}}}",
       "query": "{{{query}}}"
-    }{{#unless @last}},{{/unless}}
-{{/each}}
+    }{{#isNotLast}},{{/isNotLast}}
+{{/entries}}
   ]
 }`,
     fileExtension: '.json',
@@ -118,9 +118,9 @@ Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
     id: 'csv',
     name: 'CSV',
     template: `Index,URL,Method,Type,Timestamp,Domain
-{{#each entries}}
+{{#entries}}
 {{index1}},"{{{url}}}","{{method}}","{{type}}",{{timestamp}},"{{domain}}"
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.csv',
     isBuiltIn: true,
     description: 'Comma-separated values format',
@@ -133,15 +133,15 @@ Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
 **Exported:** {{exportDate}}
 **Total:** {{totalEntries}} entries
 
-{{#each entries}}
+{{#entries}}
 ## {{index1}}. {{domain}}
 
 - **URL**: {{{url}}}
 - **Method**: {{method}}
 - **Type**: {{type}}
-- **Time**: {{formatDate timestamp "YYYY-MM-DD HH:mm:ss"}}
+- **Time**: {{formattedDateTime}}
 
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.md',
     isBuiltIn: true,
     description: 'Markdown formatted document',
@@ -153,11 +153,11 @@ Invoke-WebRequest -Uri "{{{escapePowershell url}}}" \\
 # Generated on {{exportDate}}
 # Total entries: {{totalEntries}}
 
-{{#each entries}}
-wget "{{{escapeShell url}}}" \\
+{{#entries}}
+wget {{{urlEscaped}}} \\
   -O "{{index1}}_{{filename}}" \\
   --user-agent="{{headers.User-Agent}}"
-{{/each}}`,
+{{/entries}}`,
     fileExtension: '.sh',
     isBuiltIn: true,
     description: 'Bash script with wget commands',
@@ -165,14 +165,14 @@ wget "{{{escapeShell url}}}" \\
   {
     id: 'aria2c',
     name: 'aria2c Input File',
-    template: `{{#each entries}}
+    template: `{{#entries}}
 {{{url}}}
   out={{index1}}_{{filename}}
   user-agent={{headers.User-Agent}}
-{{#if headers.Referer}}
-  referer={{headers.Referer}}
-{{/if}}
-{{/each}}`,
+{{#headers.Referer}}
+  referer={{{.}}}
+{{/headers.Referer}}
+{{/entries}}`,
     fileExtension: '.txt',
     isBuiltIn: true,
     description: 'aria2c input file format',
