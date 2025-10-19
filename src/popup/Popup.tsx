@@ -16,6 +16,7 @@ import { FilterDropdown } from './components/FilterDropdown';
 import { QuickFilters } from './components/QuickFilters';
 import { FilterPreviewBadge } from './components/FilterPreviewBadge';
 import { DuplicateControl } from './components/DuplicateControl';
+import { ManifestFilterControl } from './components/ManifestFilterControl';
 import { LogList } from './components/LogList';
 import { DetailsDialog } from './components/DetailsDialog';
 import { Toaster } from '@/components/ui/sonner';
@@ -26,6 +27,7 @@ import { applyPreset } from '@/lib/filter-presets';
 import { defaultSettings } from '@/types/schemas';
 import { Logger } from '@/lib/logger';
 import { detectDuplicates, DuplicateStrategy } from '@/lib/duplicate-detector';
+import { filterManifestEntries } from '@/lib/manifest-filter';
 
 export function Popup() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +39,7 @@ export function Popup() {
   const [duplicateStrategy, setDuplicateStrategy] = useState<DuplicateStrategy>(
     DuplicateStrategy.KEEP_FIRST
   );
+  const [smartFilterEnabled, setSmartFilterEnabled] = useState(false);
 
   // Custom hooks
   const monitoring = useMonitoring();
@@ -76,9 +79,15 @@ export function Popup() {
     }
   }
 
-  // Filter entries based on search term, filter type, and duplicate settings
+  // Filter entries based on search term, filter type, manifest filtering, and duplicate settings
   const filteredEntries = useMemo(() => {
-    let entries = monitoring.status.entries.filter((entry) => {
+    // Apply smart manifest filtering first if enabled
+    let entries = smartFilterEnabled
+      ? filterManifestEntries(monitoring.status.entries)
+      : monitoring.status.entries;
+
+    // Apply search term and resource type filters
+    entries = entries.filter((entry) => {
       // Search term filter
       if (searchTerm && !entry.url.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
@@ -99,7 +108,7 @@ export function Popup() {
     }
 
     return entries;
-  }, [monitoring.status.entries, searchTerm, filterType, showDuplicatesOnly]);
+  }, [monitoring.status.entries, searchTerm, filterType, showDuplicatesOnly, smartFilterEnabled]);
 
   async function handleExport(format: ExportFormat) {
     const loading = monitoring.loading || entryActionsHook.loading;
@@ -191,6 +200,13 @@ export function Popup() {
               onToggleDuplicates={setShowDuplicatesOnly}
               duplicateStrategy={duplicateStrategy}
               onStrategyChange={setDuplicateStrategy}
+            />
+
+            {/* Manifest Filter Control */}
+            <ManifestFilterControl
+              entries={monitoring.status.entries}
+              smartFilterEnabled={smartFilterEnabled}
+              onToggleFilter={setSmartFilterEnabled}
             />
 
             {/* Log List */}
