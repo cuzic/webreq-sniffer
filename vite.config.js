@@ -5,6 +5,7 @@ import manifest from './manifest.json';
 import path from 'path';
 
 export default defineConfig({
+  base: './',
   plugins: [react(), crx({ manifest })],
   resolve: {
     alias: {
